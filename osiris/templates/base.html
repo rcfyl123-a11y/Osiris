@@ -24,9 +24,23 @@
                     <a class="nav-link" href="/blog/">Blog</a>
                 </li>
             </ul>
-            <span class="navbar-text text-white">
-                {% block navbar_extra %}{% endblock %}
-            </span>
+            <div class="d-flex align-items-center gap-3">
+                <span class="navbar-text text-white">
+                    {% block navbar_extra %}{% endblock %}
+                </span>
+                {% if user.is_authenticated %}
+                    <span class="navbar-text text-white">
+                        Привет, {{ user.username }}
+                    </span>
+                    <form method="post" action="{% url 'logout' %}" class="mb-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-light btn-sm">Выйти</button>
+                    </form>
+                {% else %}
+                    <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">Вход</a>
+                    <a class="btn btn-primary btn-sm" href="{% url 'signup' %}">Регистрация</a>
+                {% endif %}
+            </div>
         </div>
     </div>
 </nav>
