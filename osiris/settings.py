@@ -2,15 +2,20 @@
 Settings for Osiris project
 """
 
-from .config import *
 import os
+import sys
 from pathlib import Path
 
+# Add the workspace directory to Python path so apps can be found
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
+
+# Import base configuration
+from .config import *
 
 # Add apps directory to Python path so Django can discover them
-import sys
 sys.path.insert(0, str(APPS_DIR))
 
 # Discover and add apps automatically
@@ -34,14 +39,7 @@ def discover_apps():
 
 # Update INSTALLED_APPS with discovered apps
 DISCOVERED_APPS = discover_apps()
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-] + DISCOVERED_APPS
+INSTALLED_APPS = BASE_INSTALLED_APPS + DISCOVERED_APPS
 
 # Database configuration - each app can override this if needed
 DATABASES = {
