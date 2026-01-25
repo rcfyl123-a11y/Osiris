@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Blog News | Osiris{% endblock %}
+
+{% block navbar_extra %}
+    {{ navbar_message }}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div>
+        <h1 class="fw-bold mb-1">Blog news</h1>
+        <p class="text-muted mb-0">Latest updates and announcements with images.</p>
+    </div>
+    <div class="mt-3 mt-md-0">
+        <a class="btn btn-outline-secondary me-2" href="/admin/">Admin</a>
+        <a class="btn btn-primary" href="{% url 'blog:create' %}">Add news</a>
+    </div>
+</div>
+
+{% if news_items %}
+    <div class="row g-4">
+        {% for item in news_items %}
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ item.title }}</h5>
+                        <p class="card-text text-muted">{{ item.summary|default:item.body|truncatechars:140 }}</p>
+                        <div class="mt-auto">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'blog:detail' item.pk %}">
+                                Read more
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        {{ item.created_at|date:"M d, Y" }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        There are no news items yet. Create the first one in the admin or with the form.
+    </div>
+{% endif %}
+{% endblock %}

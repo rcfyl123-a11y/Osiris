@@ -1,3 +1,1 @@
-from .apps import BlogConfig
-
-default_app_config = 'blog.apps.BlogConfig'
+default_app_config = "osiris.apps.blog.apps.BlogConfig"

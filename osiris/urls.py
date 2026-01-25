@@ -10,7 +10,7 @@ from django.urls import include, path
 from osiris.apps.blog import views as blog_views
 
 urlpatterns = [
-    path("", blog_views.index, name="home"),
+    path("", blog_views.home, name="home"),
     path("admin/", admin.site.urls),
 ]
 
