@@ -14,7 +14,7 @@ urlpatterns = [
 ]
 
 # Dynamically discover and include app URLs
-APPS_DIR = Path(__file__).resolve().parent.parent / "apps"
+APPS_DIR = Path(__file__).resolve().parent / "apps"
 
 for app_path in APPS_DIR.iterdir():
     if app_path.is_dir():
@@ -25,7 +25,7 @@ for app_path in APPS_DIR.iterdir():
             try:
                 app_name = app_path.name
                 urlpatterns.append(
-                    path(f"{app_name}/", include(f"{app_name}.urls"))
+                    path(f"{app_name}/", include(f"osiris.apps.{app_name}.urls"))
                 )
             except ImportError:
                 pass  # Skip apps that don't have a proper urls.py
@@ -33,4 +33,4 @@ for app_path in APPS_DIR.iterdir():
 # Serve static files during development
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static('/media/', document_root='media')
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

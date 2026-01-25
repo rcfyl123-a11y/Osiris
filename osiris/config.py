@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 # Project root
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 
 # Apps directory
 APPS_DIR = BASE_DIR / "apps"
@@ -16,8 +16,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key-here')
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# Application definition
-INSTALLED_APPS = [
+# Application definition - base apps
+BASE_INSTALLED_APPS = [
     # Django core apps
     'django.contrib.admin',
     'django.contrib.auth',
@@ -28,9 +28,6 @@ INSTALLED_APPS = [
     
     # Third-party apps
     # Add your third-party apps here
-    
-    # Osiris apps
-    # These will be dynamically loaded from the apps directory
 ]
 
 MIDDLEWARE = [
@@ -43,7 +40,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'osiris.urls'
 
 TEMPLATES = [
     {
@@ -61,7 +58,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'wsgi.application'
+WSGI_APPLICATION = 'osiris.wsgi.application'
 
 # Database settings will be configured per app
 DATABASES = {
