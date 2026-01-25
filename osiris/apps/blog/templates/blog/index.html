@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Osiris{% endblock %}
+
+{% block navbar_extra %}
+    {{ navbar_message }}
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center">
+    <div class="col-lg-6">
+        <h1 class="display-4 fw-bold">Welcome to Osiris</h1>
+        <p class="lead text-muted">
+            Manage your blog content, explore updates, and build your next story with a clean,
+            Bootstrap-powered layout.
+        </p>
+        <a class="btn btn-primary btn-lg" href="/blog/">Go to the blog</a>
+    </div>
+    <div class="col-lg-6 mt-4 mt-lg-0">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Latest updates</h5>
+                <p class="card-text text-muted">
+                    Keep track of new posts, announcements, and highlights from the Osiris platform.
+                </p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Draft your next article in minutes.</li>
+                    <li class="list-group-item">Share stories with your audience.</li>
+                    <li class="list-group-item">Stay organized with simple navigation.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
