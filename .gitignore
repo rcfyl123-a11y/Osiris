@@ -1,43 +1,38 @@
-# Compiled source #
-###################
-*.com
-*.class
-*.dll
-*.exe
-*.o
+```
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 *.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Packages #
-############
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-
-# Logs and databases #
-######################
+# Django
 *.log
-*.sql
-*.sqlite
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
-# OS generated files #
-######################
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# IDE
+.vscode/
+.idea/
 
-# Course specific #
-###################
-node_modules
-package.json
-package-lock.json
+# Environment
+.env
+.env.local
+.env.
+```
