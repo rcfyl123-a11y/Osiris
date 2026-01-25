@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ news_item.title }} | Osiris{% endblock %}
+
+{% block navbar_extra %}
+    {{ navbar_message }}
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a class="btn btn-link ps-0" href="{% url 'blog:index' %}">← Back to news</a>
+</div>
+
+<article class="card shadow-sm">
+    {% if news_item.image %}
+        <img src="{{ news_item.image.url }}" class="card-img-top" alt="{{ news_item.title }}">
+    {% endif %}
+    <div class="card-body">
+        <h1 class="card-title fw-bold">{{ news_item.title }}</h1>
+        {% if news_item.summary %}
+            <p class="lead text-muted">{{ news_item.summary }}</p>
+        {% endif %}
+        <div class="mb-3 text-muted small">Published {{ news_item.created_at|date:"M d, Y" }}</div>
+        <div class="fs-6">{{ news_item.body|linebreaks }}</div>
+        <div class="mt-4">
+            <a class="btn btn-outline-secondary me-2" href="{% url 'blog:edit' news_item.pk %}">
+                Edit
+            </a>
+            <a class="btn btn-outline-secondary" href="/admin/blog/news/{{ news_item.pk }}/change/">
+                Admin edit
+            </a>
+        </div>
+    </div>
+</article>
+{% endblock %}
