@@ -1,5 +1,8 @@
-from django.http import HttpResponse
+from django.shortcuts import render
+
+
+NAVBAR_MESSAGE = "Welcome to the Blog App!"
 
 
 def index(request):
-    return HttpResponse("Welcome to the Blog App!")
+    return render(request, "blog/index.html", {"navbar_message": NAVBAR_MESSAGE})
