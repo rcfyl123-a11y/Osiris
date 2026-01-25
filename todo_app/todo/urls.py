@@ -6,4 +6,6 @@ urlpatterns = [
     path('create/', views.todo_create, name='todo_create'),
     path('toggle/<int:pk>/', views.todo_toggle_complete, name='todo_toggle'),
     path('delete/<int:pk>/', views.todo_delete, name='todo_delete'),
+    path('register/', views.register, name='register'),
+    path('login/', views.login_view, name='login'),
 ]
