@@ -43,7 +43,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'osiris.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
@@ -61,7 +61,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'osiris.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 # Database settings will be configured per app
 DATABASES = {
