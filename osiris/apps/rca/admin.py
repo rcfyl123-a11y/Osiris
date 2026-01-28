@@ -6,7 +6,23 @@ from osiris.apps.rca import models
 
 @admin.register(models.Org)
 class OrgAdmin(admin.ModelAdmin):
+    fields = (
+        "code",
+        "current_name",
+        "current_full_name",
+        "current_parent_code",
+        "current_is_top",
+        "created_at",
+    )
     list_display = (
+        "code",
+        "current_name",
+        "current_full_name",
+        "current_parent_code",
+        "current_is_top",
+        "created_at",
+    )
+    readonly_fields = (
         "code",
         "current_name",
         "current_full_name",
