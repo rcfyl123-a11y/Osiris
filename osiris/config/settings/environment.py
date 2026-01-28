@@ -75,6 +75,12 @@ except Exception as e:
 # Базовые настройки
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure-key-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") in {"1", "true", "True", "yes"}
+ENABLE_DEBUG_TOOLBAR = DEBUG and os.getenv("DJANGO_ENABLE_DEBUG_TOOLBAR", "0") in {
+    "1",
+    "true",
+    "True",
+    "yes",
+}
 ALLOWED_HOSTS = [h for h in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if h]
 
 log.debug(f"DEBUG: {DEBUG}")

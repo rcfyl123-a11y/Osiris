@@ -1,3 +1,6 @@
+from .environment import ENABLE_DEBUG_TOOLBAR
+
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -7,7 +10,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 
-    # DEBUG_TOOLS
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-
 ]
+
+if ENABLE_DEBUG_TOOLBAR:
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
