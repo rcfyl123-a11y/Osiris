@@ -94,9 +94,9 @@ USE_TZ = True
 # URLs
 ROOT_URLCONF = "config.urls"
 
-LOGIN_URL = "core:login"
-LOGIN_REDIRECT_URL = "core:index"
-LOGOUT_REDIRECT_URL = "core:index"
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
 
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
