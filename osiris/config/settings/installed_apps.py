@@ -11,6 +11,7 @@ INSTALLED_APPS = [
 
     "osiris.apps.accounts.apps.AccountsConfig",
     "osiris.apps.blog.apps.BlogConfig",
+    "osiris.apps.chat.apps.ChatConfig",
     "osiris.apps.rca.apps.RcaConfig",
 
     # ibm-db2 service
