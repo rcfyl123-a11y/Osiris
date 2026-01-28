@@ -1,3 +1,6 @@
+from .environment import ENABLE_DEBUG_TOOLBAR
+
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -6,12 +9,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # DEBUG_TOOLS
-    "debug_toolbar",
-
-    "apps.core.apps.CoreConfig",
-    "apps.rca.apps.RCAConfig",
+    "osiris.apps.accounts.apps.AccountsConfig",
+    "osiris.apps.blog.apps.BlogConfig",
 
     # ibm-db2 service
     # "apps.ibmdb.apps.IBMDBConfig",
 ]
+
+if ENABLE_DEBUG_TOOLBAR:
+    INSTALLED_APPS.append("debug_toolbar")
