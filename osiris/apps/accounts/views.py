@@ -1,10 +1,14 @@
+"""osiris.apps.accounts.views — представления регистрации и аутентификации."""
+
 from django.contrib.auth import login
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from .forms import SignupForm
 
 
-def signup(request):
+def signup(request: HttpRequest) -> HttpResponse:
+    """Зарегистрировать пользователя и выполнить вход после успешной регистрации."""
     if request.method == "POST":
         form = SignupForm(request.POST)
         if form.is_valid():

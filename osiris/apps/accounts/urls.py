@@ -1,3 +1,5 @@
+"""osiris.apps.accounts.urls — маршруты для приложения accounts."""
+
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 

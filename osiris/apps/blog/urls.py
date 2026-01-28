@@ -1,3 +1,5 @@
+"""osiris.apps.blog.urls — маршруты для приложения блога."""
+
 from django.urls import path
 
 from . import views

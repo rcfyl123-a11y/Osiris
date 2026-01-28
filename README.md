@@ -1,74 +1,71 @@
-# Osiris Django Project
+# Проект Osiris (Django)
 
-## Overview
-Osiris is a Django project with a modular architecture that allows for automatic discovery and loading of applications located in the `apps` directory.
+## Обзор
+Osiris — Django-проект с модульной архитектурой и автоматическим
+обнаружением приложений в каталоге `osiris/apps`.
 
-## Architecture
-- **Main Project Directory**: `/workspace/osiris` - Contains the main project settings and configuration
-- **Apps Directory**: `/workspace/osiris/apps` - Contains individual Django applications that are automatically discovered and registered
-- **Configuration**: Uses a modular configuration approach with `config.py` and `settings.py`
+## Архитектура
+- **Основной каталог проекта**: `/workspace/Osiris/osiris` — настройки и конфигурация.
+- **Каталог приложений**: `/workspace/Osiris/osiris/apps` — Django‑приложения,
+  которые автоматически регистрируются.
+- **Конфигурация**: модульный подход через пакет `config`.
 
-## Features
-- Automatic app discovery: New apps in the `apps` directory are automatically detected and added to `INSTALLED_APPS`
-- Modular configuration: Base settings in `config.py`, extended in `settings.py`
-- Dynamic URL routing: App-specific URLs are automatically included in the main URL configuration
+## Возможности
+- Автоматическое обнаружение приложений и добавление в `INSTALLED_APPS`.
+- Модульная сборка настроек из `osiris/config/settings`.
+- Динамическая маршрутизация URL для приложений.
 
-## Getting Started
+## Быстрый старт
 
-1. **Install Dependencies**:
+1. **Установить зависимости**:
    ```bash
    pip install -r osiris/requirements.txt
    ```
 
-2. **Run Migrations**:
+2. **Выполнить миграции**:
    ```bash
    cd osiris
    python manage.py migrate
    ```
 
-3. **Run Development Server**:
+3. **Запустить сервер разработки**:
    ```bash
    python manage.py runserver
    ```
 
-## Adding New Apps
+## Добавление новых приложений
 
-To add a new app:
-1. Create a new directory under `/workspace/osiris/apps/`
-2. Initialize it as a Django app with `apps.py` and `__init__.py` files
-3. Optionally create a `urls.py` file for app-specific routes
-4. The app will be automatically discovered and registered
+Чтобы добавить новое приложение:
+1. Создайте каталог в `/workspace/Osiris/osiris/apps/`.
+2. Инициализируйте Django‑приложение с `apps.py` и `__init__.py`.
+3. При необходимости добавьте `urls.py`.
+4. Приложение будет автоматически обнаружено и зарегистрировано.
 
-## Configuration Files
+## Конфигурационные файлы
 
-- `osiris/config.py`: Base configuration settings shared across the project
-- `osiris/settings.py`: Extended settings including app discovery logic
-- `osiris/urls.py`: Main URL configuration with dynamic app URL inclusion
-- `osiris/wsgi.py`: WSGI application configuration
-- `osiris/manage.py`: Django management utility entry point
+- `osiris/config/`: пакет конфигурации с настройками окружения.
+- `osiris/config/urls.py`: главная маршрутизация URL с подключением приложений.
+- `osiris/config/asgi.py`: конфигурация ASGI.
+- `osiris/config/wsgi.py`: конфигурация WSGI.
+- `osiris/manage.py`: точка входа Django management.
 
-## Project Structure
+## Структура проекта
 ```
 /workspace/
-├── osiris/                 # Main project directory
-│   ├── __init__.py         # Makes project a Python package
-│   ├── config.py           # Base configuration
-│   ├── settings.py         # Extended settings with app discovery
-│   ├── urls.py             # Main URL configuration
-│   ├── wsgi.py             # WSGI application
-│   ├── manage.py           # Management utility
-│   ├── apps/              # Applications directory
-│   │   ├── __init__.py    # Package marker
-│   │   └── blog/          # Example app
-│   │       ├── __init__.py
-│   │       ├── apps.py
-│   │       ├── views.py
-│   │       └── urls.py
-│   └── static/            # Static files directory
-└── README.md              # This file
+├── Osiris/                 # Корень репозитория
+│   ├── osiris/             # Пакет Django проекта
+│   │   ├── config/         # Настройки и ASGI/WSGI
+│   │   ├── manage.py       # Management-утилита
+│   │   ├── apps/           # Каталог приложений
+│   │   │   ├── accounts/   # Аутентификация
+│   │   │   ├── blog/       # Новости и блог
+│   │   │   └── rca/        # Штатное расписание (SCD2)
+│   │   └── templates/      # Общие шаблоны
+│   └── README.md           # Этот файл
 ```
 
-## Environment Variables
-- `SECRET_KEY`: Django secret key (defaults to placeholder if not set)
-- `DEBUG`: Enable/disable debug mode ('True' or 'False', defaults to 'False')
-- `ALLOWED_HOSTS`: Comma-separated list of allowed hosts (defaults to localhost,127.0.0.1)
+## Переменные окружения
+- `SECRET_KEY`: секретный ключ Django (по умолчанию — заглушка).
+- `DEBUG`: режим отладки ('True' или 'False', по умолчанию 'False').
+- `ALLOWED_HOSTS`: список разрешённых хостов через запятую
+  (по умолчанию `localhost,127.0.0.1`).

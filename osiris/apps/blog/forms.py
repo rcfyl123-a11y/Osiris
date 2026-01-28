@@ -1,9 +1,13 @@
+"""osiris.apps.blog.forms — формы для приложения блога."""
+
 from django import forms
 
 from .models import News
 
 
 class NewsForm(forms.ModelForm):
+    """Форма создания и редактирования новостей."""
+
     class Meta:
         model = News
         fields = ["title", "summary", "body", "image", "is_published"]

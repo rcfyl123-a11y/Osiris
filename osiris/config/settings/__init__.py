@@ -1,4 +1,4 @@
-# config/settings/__init__.py
+"""osiris.config.settings — агрегатор модулей настроек Django-проекта."""
 
 # Конфигурация логирования
 from .logging import *

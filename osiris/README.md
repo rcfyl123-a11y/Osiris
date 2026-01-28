@@ -1,59 +1,52 @@
-# Osiris Project
+# Проект Osiris
 
-A modular Django-based application framework designed for scalable web applications.
+Модульный Django‑фреймворк для масштабируемых веб‑приложений.
 
-## Structure
+## Структура
 
 ```
 osiris/
 ├── __init__.py
-├── config.py           # Main configuration settings
-├── settings.py         # Django settings
-├── urls.py             # Main URL routing
-├── wsgi.py             # WSGI configuration
-├── manage.py           # Management script
-└── apps/               # Individual applications
-    └── todo/           # Example todo application
-        ├── __init__.py
-        ├── apps.py
-        ├── models.py
-        ├── views.py
-        ├── urls.py
-        ├── migrations/
-        └── templates/
+├── manage.py            # Management-утилита
+├── config/              # Настройки и ASGI/WSGI конфиги
+├── apps/                # Приложения
+│   ├── accounts/        # Аутентификация
+│   ├── blog/            # Новости и блог
+│   └── rca/             # Штатное расписание (SCD2)
+└── templates/           # Общие шаблоны
 ```
 
-## Features
+## Возможности
 
-- **Modular Architecture**: Applications are organized in the `apps/` directory
-- **Dynamic App Discovery**: New apps are automatically detected and registered
-- **Scalable Design**: Easy to add new functionality as separate apps
+- **Модульная архитектура**: приложения сгруппированы в `apps/`.
+- **Динамическое обнаружение**: новые приложения автоматически регистрируются.
+- **Масштабируемость**: проще добавлять новый функционал отдельными модулями.
 
-## Installation
+## Установка
 
-1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run migrations: `python manage.py migrate`
-4. Start the server: `python manage.py runserver`
+1. Клонируйте репозиторий.
+2. Установите зависимости: `pip install -r requirements.txt`.
+3. Выполните миграции: `python manage.py migrate`.
+4. Запустите сервер: `python manage.py runserver`.
 
-## Adding New Apps
+## Добавление новых приложений
 
-To add a new app to the Osiris framework:
+1. Создайте приложение в каталоге `osiris/apps/`.
+2. Убедитесь, что структура Django‑приложения корректна.
+3. Зарегистрируйте приложение в `apps.py`.
+4. Основа Osiris автоматически обнаружит и загрузит его.
 
-1. Create your app in the `osiris/apps/` directory
-2. Make sure it has the proper Django app structure
-3. Register it in your app's `apps.py`
-4. The main Osiris system will automatically detect and load it
-
-## Running the Project
+## Запуск проекта
 
 ```bash
 cd osiris
 python manage.py runserver
 ```
 
-The application will be accessible at http://127.0.0.1:8000/
+Приложение будет доступно по адресу http://127.0.0.1:8000/
 
-## Current Apps
+## Текущие приложения
 
-- **Todo**: A simple todo list application demonstrating the modular architecture
+- **Accounts**: регистрация и авторизация.
+- **Blog**: публикация новостей и страницы блога.
+- **RCA**: штатное расписание с историей изменений (SCD2).
