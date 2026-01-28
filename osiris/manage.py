@@ -6,9 +6,12 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    # Add the parent directory to the Python path so apps can be found
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'osiris.settings')
+    # Add the current and parent directories to the Python path so apps can be found
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    sys.path.insert(0, current_dir)
+    sys.path.insert(0, project_root)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
