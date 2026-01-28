@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 
 import duckdb
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Max
+from django.utils import timezone
 from loguru import logger
 
 from osiris.apps.rca.models import (
@@ -83,6 +84,13 @@ def row_hash_employee(
         ]
     )
     return sha256_hex(base)
+
+
+def created_at_from_set_date(set_date: date) -> datetime:
+    created_at = datetime.combine(set_date, time.min)
+    if settings.USE_TZ:
+        return timezone.make_aware(created_at, timezone.get_current_timezone())
+    return created_at
 
 
 class RcaImportService:
@@ -204,8 +212,9 @@ class RcaImportService:
         duck_db.close()
 
         org_versions_created = 0
+        created_at = created_at_from_set_date(set_date)
         for row in parse_org(org_path):
-            org, _ = Org.objects.get_or_create(code=row.code)
+            org, _ = Org.objects.get_or_create(code=row.code, defaults={"created_at": created_at})
             row_hash = row_hash_org(row.code, row.name, row.full_name, row.parent_code, row.is_top)
 
             current = OrgVersion.objects.filter(org=org, is_current=True).first()
@@ -232,7 +241,7 @@ class RcaImportService:
 
         post_versions_created = 0
         for row in parse_post(post_path):
-            post, _ = Post.objects.get_or_create(code=row.code)
+            post, _ = Post.objects.get_or_create(code=row.code, defaults={"created_at": created_at})
             row_hash = row_hash_post(row.code, row.name)
             current = PostVersion.objects.filter(post=post, is_current=True).first()
             if current and current.row_hash == row_hash:
@@ -261,14 +270,14 @@ class RcaImportService:
         def get_org(code: str) -> Org:
             if code in org_cache:
                 return org_cache[code]
-            org, _ = Org.objects.get_or_create(code=code)
+            org, _ = Org.objects.get_or_create(code=code, defaults={"created_at": created_at})
             org_cache[code] = org
             return org
 
         def get_post(code: str) -> Post:
             if code in post_cache:
                 return post_cache[code]
-            post, _ = Post.objects.get_or_create(code=code)
+            post, _ = Post.objects.get_or_create(code=code, defaults={"created_at": created_at})
             post_cache[code] = post
             return post
 
