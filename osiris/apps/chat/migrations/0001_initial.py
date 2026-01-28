@@ -105,10 +105,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="chatroom",
-            constraint=models.CheckConstraint(check=models.Q(models.Q(("room_type", "direct"), ("direct_key__isnull", False)), models.Q(("room_type", "group")), _connector="OR"), name="chat_room_direct_key_required"),
+            constraint=models.CheckConstraint(condition=models.Q(models.Q(("room_type", "direct"), ("direct_key__isnull", False)), models.Q(("room_type", "group")), _connector="OR"), name="chat_room_direct_key_required"),
         ),
         migrations.AddConstraint(
             model_name="chatroom",
-            constraint=models.CheckConstraint(check=models.Q(models.Q(("room_type", "group"), ("name__isnull", False)), models.Q(("room_type", "direct")), _connector="OR"), name="chat_room_group_name_required"),
+            constraint=models.CheckConstraint(condition=models.Q(models.Q(("room_type", "group"), ("name__isnull", False)), models.Q(("room_type", "direct")), _connector="OR"), name="chat_room_group_name_required"),
         ),
     ]

@@ -32,15 +32,15 @@ class ChatRoom(models.Model):
             models.CheckConstraint(
                 name="chat_room_direct_key_required",
                 condition=(
-                    models.Q(room_type=RoomType.DIRECT, direct_key__isnull=False)
-                    | models.Q(room_type=RoomType.GROUP)
+                    models.Q(room_type="direct", direct_key__isnull=False)
+                    | models.Q(room_type="group")
                 ),
             ),
             models.CheckConstraint(
                 name="chat_room_group_name_required",
                 condition=(
-                    models.Q(room_type=RoomType.GROUP, name__isnull=False)
-                    | models.Q(room_type=RoomType.DIRECT)
+                    models.Q(room_type="group", name__isnull=False)
+                    | models.Q(room_type="direct")
                 ),
             ),
         ]
