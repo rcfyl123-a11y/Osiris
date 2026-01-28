@@ -14,7 +14,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 ]
 
-APPS_DIR = Path(__file__).resolve().parent / "apps"
+APPS_DIR = Path(__file__).resolve().parent.parent / "apps"
 
 for app_path in APPS_DIR.iterdir():
     if app_path.is_dir():
