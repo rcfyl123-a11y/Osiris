@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ employee.last_name }} {{ employee.first_name }} | Osiris{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <a class="text-decoration-none small text-muted" href="{% url 'rca:employee_list' %}">
+            <i class="fas fa-arrow-left me-1"></i>К списку сотрудников
+        </a>
+        <h1 class="h3 mb-1">{{ employee.last_name }} {{ employee.first_name }} {{ employee.middle_name }}</h1>
+        <p class="text-muted mb-0">СНИЛС: {{ employee.snils_norm }}</p>
+    </div>
+    <div>
+        {% if employee.is_fired_current %}
+            <span class="badge bg-secondary">Уволен</span>
+        {% else %}
+            <span class="badge bg-success">Активен</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Персональные данные</h2>
+                <dl class="row mb-0">
+                    <dt class="col-5 text-muted">Табель</dt>
+                    <dd class="col-7">{{ employee.tab_norm_current|default:"—" }}</dd>
+                    <dt class="col-5 text-muted">Дата рождения</dt>
+                    <dd class="col-7">{{ employee.date_of_birth }}</dd>
+                    <dt class="col-5 text-muted">Пол</dt>
+                    <dd class="col-7">{{ employee.gender|default:"—" }}</dd>
+                    <dt class="col-5 text-muted">Дата увольнения</dt>
+                    <dd class="col-7">{{ employee.fired_date_current|default:"—" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Текущая позиция</h2>
+                <dl class="row mb-0">
+                    <dt class="col-5 text-muted">Орг.единица</dt>
+                    <dd class="col-7">
+                        {% if current %}
+                            <a href="{% url 'rca:org_detail' current.org.code %}">{{ current.org.code }}</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+                    <dt class="col-5 text-muted">Должность</dt>
+                    <dd class="col-7">
+                        {% if current %}
+                            <a href="{% url 'rca:post_detail' current.post.code %}">{{ current.post.code }}</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+                    <dt class="col-5 text-muted">Состояние</dt>
+                    <dd class="col-7">{{ current.state|default:"—" }}</dd>
+                    <dt class="col-5 text-muted">Приём</dt>
+                    <dd class="col-7">{{ current.start_date|default:"—" }}</dd>
+                    <dt class="col-5 text-muted">Место работы</dt>
+                    <dd class="col-7">{{ current.office_location|default:"—" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-body">
+        <h2 class="h5">История изменений</h2>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Период</th>
+                        <th>Орг.единица</th>
+                        <th>Должность</th>
+                        <th>Состояние</th>
+                        <th>Дата приёма</th>
+                        <th>Дата увольнения</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for snapshot in snapshots %}
+                        <tr>
+                            <td>{{ snapshot.valid_from }} — {{ snapshot.valid_to|default:"∞" }}</td>
+                            <td>
+                                <a href="{% url 'rca:org_detail' snapshot.org.code %}">{{ snapshot.org.code }}</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'rca:post_detail' snapshot.post.code %}">{{ snapshot.post.code }}</a>
+                            </td>
+                            <td>{{ snapshot.state }}</td>
+                            <td>{{ snapshot.start_date }}</td>
+                            <td>{{ snapshot.fire_date }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">История отсутствует.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
