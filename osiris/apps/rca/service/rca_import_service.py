@@ -213,11 +213,28 @@ class RcaImportService:
 
         org_versions_created = 0
         created_at = created_at_from_set_date(set_date)
-        for row in parse_org(org_path):
-            org, _ = Org.objects.get_or_create(code=row.code, defaults={"created_at": created_at})
+        org_rows = list(parse_org(org_path))
+        org_codes = {row.code for row in org_rows}
+        orgs_by_code = Org.objects.in_bulk(org_codes, field_name="code")
+        missing_org_codes = org_codes - orgs_by_code.keys()
+        if missing_org_codes:
+            Org.objects.bulk_create(
+                [Org(code=code, created_at=created_at) for code in missing_org_codes],
+                ignore_conflicts=True,
+            )
+            orgs_by_code = Org.objects.in_bulk(org_codes, field_name="code")
+        org_current_versions = {
+            version.org_id: version
+            for version in OrgVersion.objects.filter(
+                org_id__in=[org.id for org in orgs_by_code.values()],
+                is_current=True,
+            )
+        }
+        for row in org_rows:
+            org = orgs_by_code[row.code]
             row_hash = row_hash_org(row.code, row.name, row.full_name, row.parent_code, row.is_top)
 
-            current = OrgVersion.objects.filter(org=org, is_current=True).first()
+            current = org_current_versions.get(org.id)
             if current and current.row_hash == row_hash:
                 continue
 
@@ -226,7 +243,7 @@ class RcaImportService:
                 current.valid_to = set_date - timedelta(days=1)
                 current.save(update_fields=["is_current", "valid_to"])
 
-            OrgVersion.objects.create(
+            current = OrgVersion.objects.create(
                 org=org,
                 name=row.name,
                 full_name=row.full_name,
@@ -237,20 +254,38 @@ class RcaImportService:
                 valid_to=None,
                 is_current=True,
             )
+            org_current_versions[org.id] = current
             org_versions_created += 1
 
         post_versions_created = 0
-        for row in parse_post(post_path):
-            post, _ = Post.objects.get_or_create(code=row.code, defaults={"created_at": created_at})
+        post_rows = list(parse_post(post_path))
+        post_codes = {row.code for row in post_rows}
+        posts_by_code = Post.objects.in_bulk(post_codes, field_name="code")
+        missing_post_codes = post_codes - posts_by_code.keys()
+        if missing_post_codes:
+            Post.objects.bulk_create(
+                [Post(code=code, created_at=created_at) for code in missing_post_codes],
+                ignore_conflicts=True,
+            )
+            posts_by_code = Post.objects.in_bulk(post_codes, field_name="code")
+        post_current_versions = {
+            version.post_id: version
+            for version in PostVersion.objects.filter(
+                post_id__in=[post.id for post in posts_by_code.values()],
+                is_current=True,
+            )
+        }
+        for row in post_rows:
+            post = posts_by_code[row.code]
             row_hash = row_hash_post(row.code, row.name)
-            current = PostVersion.objects.filter(post=post, is_current=True).first()
+            current = post_current_versions.get(post.id)
             if current and current.row_hash == row_hash:
                 continue
             if current:
                 current.is_current = False
                 current.valid_to = set_date - timedelta(days=1)
                 current.save(update_fields=["is_current", "valid_to"])
-            PostVersion.objects.create(
+            current = PostVersion.objects.create(
                 post=post,
                 name=row.name,
                 row_hash=row_hash,
@@ -258,14 +293,15 @@ class RcaImportService:
                 valid_to=None,
                 is_current=True,
             )
+            post_current_versions[post.id] = current
             post_versions_created += 1
 
         employees_created = 0
         employee_snapshots_created = 0
         vacation_periods_created = 0
 
-        org_cache: dict[str, Org] = {}
-        post_cache: dict[str, Post] = {}
+        org_cache: dict[str, Org] = dict(orgs_by_code)
+        post_cache: dict[str, Post] = dict(posts_by_code)
 
         def get_org(code: str) -> Org:
             if code in org_cache:
