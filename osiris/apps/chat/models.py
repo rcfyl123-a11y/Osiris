@@ -10,6 +10,11 @@ from django.utils import timezone
 from osiris.apps.rca.models import Org
 
 
+class RoomType(models.TextChoices):
+    DIRECT = "direct", "Личный"
+    GROUP = "group", "Групповой"
+
+
 def chat_upload_path(instance: "ChatAttachment", filename: str) -> str:
     date_path = timezone.now().strftime("%Y/%m/%d")
     room_id = instance.message.room_id or "unknown"
@@ -19,10 +24,6 @@ def chat_upload_path(instance: "ChatAttachment", filename: str) -> str:
 class ChatRoom(models.Model):
     """Комната чата (личная или групповая)."""
 
-    class RoomType(models.TextChoices):
-        DIRECT = "direct", "Личный"
-        GROUP = "group", "Групповой"
-
     class Meta:
         verbose_name = "Чат"
         verbose_name_plural = "Чаты"
@@ -30,14 +31,14 @@ class ChatRoom(models.Model):
         constraints = [
             models.CheckConstraint(
                 name="chat_room_direct_key_required",
-                check=(
+                condition=(
                     models.Q(room_type=RoomType.DIRECT, direct_key__isnull=False)
                     | models.Q(room_type=RoomType.GROUP)
                 ),
             ),
             models.CheckConstraint(
                 name="chat_room_group_name_required",
-                check=(
+                condition=(
                     models.Q(room_type=RoomType.GROUP, name__isnull=False)
                     | models.Q(room_type=RoomType.DIRECT)
                 ),
@@ -97,7 +98,7 @@ class ChatRoom(models.Model):
     )
 
     def __str__(self) -> str:
-        if self.room_type == self.RoomType.DIRECT:
+        if self.room_type == RoomType.DIRECT:
             return f"Личный чат {self.direct_key}"
         return self.name or "Групповой чат"
 
