@@ -47,5 +47,5 @@ STATIC_ROOT = str(STATIC_ROOT_PATH)
 MEDIA_ROOT = str(MEDIA_ROOT_PATH)
 
 # URL-префиксы
-STATIC_URL = "static/"
-MEDIA_URL = "media/"
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"

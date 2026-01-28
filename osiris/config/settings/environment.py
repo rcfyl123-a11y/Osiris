@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 from loguru import logger
@@ -74,7 +75,11 @@ except Exception as e:
 
 # Базовые настройки
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure-key-change-me")
-DEBUG = os.getenv("DJANGO_DEBUG", "0") in {"1", "true", "True", "yes"}
+_debug_env = os.getenv("DJANGO_DEBUG")
+if _debug_env is None:
+    DEBUG = "runserver" in sys.argv
+else:
+    DEBUG = _debug_env in {"1", "true", "True", "yes"}
 ENABLE_DEBUG_TOOLBAR = DEBUG and os.getenv("DJANGO_ENABLE_DEBUG_TOOLBAR", "0") in {
     "1",
     "true",
