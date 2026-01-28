@@ -1,7 +1,11 @@
+"""osiris.apps.blog.models — модели данных для блога."""
+
 from django.db import models
 
 
 class News(models.Model):
+    """Новостная запись, публикуемая в блоге."""
+
     title = models.CharField(max_length=200)
     summary = models.TextField(blank=True)
     body = models.TextField()
