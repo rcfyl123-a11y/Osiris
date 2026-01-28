@@ -1,0 +1,38 @@
+/* path: src/osiris/static/css/core/index.css */
+/* Главная страница: эффекты и анимации БЕЗ логики темы */
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Анимации карточек (фон/тени берутся из токенов темы) */
+.feature-card { will-change: transform, box-shadow; }
+.feature-card:hover { box-shadow: var(--shadow-2) !important; }
+
+.feature-icon { transition: transform .3s ease; }
+.feature-card:hover .feature-icon { transform: scale(1.1); }
+
+/* Мягкая анимация появления */
+.card { animation: fadeInUp .6s ease-out; }
+@keyframes fadeInUp { from { opacity:0; transform: translateY(20px);} to { opacity:1; transform: none;} }
+
+/* Улучшенные кнопки на главной */
+.btn-primary { background: linear-gradient(135deg, var(--bs-primary) 0%, #0d6efd 100%); border: none; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,110,253,.3); }
+
+/* Бейдж «фиолетовый» как раньше */
+.bg-purple { background-color: #6f42c1 !important; }
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .display-4 { font-size: 2.5rem; }
+    .lead { font-size: 1.1rem; }
+    .health-status { flex-direction: column; text-align: center; gap: .5rem !important; }
+}
+
+.feature-card {
+    will-change: transform, box-shadow;
+}

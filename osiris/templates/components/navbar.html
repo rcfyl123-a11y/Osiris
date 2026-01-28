@@ -1,0 +1,105 @@
+<!-- path: src/osiris/templates/components/navbar.html -->
+{% with p=request.path %}
+    <nav class="navbar navbar-expand-lg border-bottom sticky-top bg-body-tertiary glass-effect">
+        <div class="container">
+            <a class="navbar-brand" href="/">Osiris v2</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Меню">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if p == '/' %}active{% endif %}" href="/">Главная</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if p|slice:':8' == '/health/' or p == '/health/' %}active{% endif %}"
+                           href="/health/">
+                            Health
+                        </a>
+                    </li>
+
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    <!-- Переключатель темы -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            Тема: <span id="theme-label">Авто</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button class="dropdown-item theme-select" data-theme="auto">Авто (системная)</button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item theme-select" data-theme="light">Светлая</button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item theme-select" data-theme="dark">Тёмная</button>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <button class="dropdown-item theme-select" data-theme="contrast">Высокий контраст</button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Блок авторизации -->
+                    {% if user.is_authenticated %}
+                        <!-- Авторизованный пользователь -->
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle d-flex align-items-center text-decoration-none"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: inherit;">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="Аватар"
+                                         class="rounded-circle me-2"
+                                         style="width: 32px; height: 32px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-2"
+                                         style="width: 32px; height: 32px;">
+                                        <span class="text-white">{{ user.username|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                                <span>{{ user.username }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if user.is_staff or user.is_superuser %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'core:admin_dashboard' %}">
+                                            <i class="fas fa-tachometer-alt me-2"></i>Панель управления
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'admin:index' %}" target="_blank">
+                                            <i class="fas fa-cogs me-2"></i>Django Admin
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'core:logout' %}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <!-- Неавторизованный пользователь -->
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'core:login' %}" class="btn btn-outline-primary btn-sm">Войти</a>
+                            <a href="{% url 'core:register' %}" class="btn btn-primary btn-sm">Регистрация</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+{% endwith %}

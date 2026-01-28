@@ -1,0 +1,91 @@
+/* path: src/osiris/static/css/theme/dark.css */
+/* Тёмная тема. Все правила — ТОЛЬКО под [data-bs-theme="dark"] */
+[data-bs-theme="dark"] {
+    /* Более светлые поверхности из набора «серых», отличимых от body */
+    --surface-1: #14161b;                 /* базовая поверхность */
+    --surface-card: #1b1e26;              /* карточки — чуть светлее body */
+    --border-weak: rgba(255,255,255,.12); /* видимая окантовка */
+    --shadow-1: 0 2px 8px rgba(0,0,0,.25);
+    --shadow-2: 0 8px 30px rgba(0,0,0,.4);
+
+    /* Фиче-карточки — отдельные токены (можно варьировать независимо) */
+    --feature-bg: #1b1f27;
+    --feature-border: rgba(255,255,255,.14);
+    --feature-shadow: 0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+/* Контрастные тексты/вторичные тексты */
+[data-bs-theme="dark"] .text-body-secondary { color: rgba(255,255,255,.72) !important; }
+
+/* Навбар стеклянный под тёмную тему */
+[data-bs-theme="dark"] .glass-effect {
+    background: rgba(20,20,25,.95) !important;
+    border-bottom: 1px solid rgba(255,255,255,.1) !important;
+}
+
+/* Градиентный заголовок — более «холодный», чтобы читался на dark */
+[data-bs-theme="dark"] .gradient-text {
+    background: linear-gradient(135deg, #6ea8fe 0%, #0dcaf0 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* Статусы /health/ — с лучшим контрастом */
+[data-bs-theme="dark"] .health-status-loading {
+    background: linear-gradient(135deg, rgba(13,110,253,.15) 0%, rgba(13,110,253,.08) 100%) !important;
+    border: 1px solid rgba(13,110,253,.3) !important;
+    color: #6ea8fe !important;
+}
+[data-bs-theme="dark"] .health-status-success {
+    background: linear-gradient(135deg, rgba(25,135,84,.15) 0%, rgba(25,135,84,.08) 100%) !important;
+    border: 1px solid rgba(25,135,84,.3) !important;
+    color: #75b798 !important;
+}
+[data-bs-theme="dark"] .health-status-error {
+    background: linear-gradient(135deg, rgba(220,53,69,.15) 0%, rgba(220,53,69,.08) 100%) !important;
+    border: 1px solid rgba(220,53,69,.3) !important;
+    color: #ea868f !important;
+}
+
+[data-bs-theme="dark"] footer {
+    background: var(--surface-1);
+    border-top: 1px solid var(--border-weak);
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Темная тема - тосты */
+[data-bs-theme="dark"] .message-toast[data-message-type="success"] {
+    background: rgba(25, 135, 84, 0.9) !important;
+    border: 1px solid rgba(25, 135, 84, 0.6) !important;
+}
+
+[data-bs-theme="dark"] .message-toast[data-message-type="error"],
+[data-bs-theme="dark"] .message-toast[data-message-type="danger"] {
+    background: rgba(220, 53, 69, 0.9) !important;
+    border: 1px solid rgba(220, 53, 69, 0.6) !important;
+}
+
+[data-bs-theme="dark"] .message-toast[data-message-type="warning"] {
+    background: rgba(255, 193, 7, 0.9) !important;
+    border: 1px solid rgba(255, 193, 7, 0.6) !important;
+}
+
+[data-bs-theme="dark"] .message-toast[data-message-type="info"] {
+    background: rgba(13, 110, 253, 0.9) !important;
+    border: 1px solid rgba(13, 110, 253, 0.6) !important;
+}
+
+[data-bs-theme="dark"] .message-toast[data-message-type="secondary"] {
+    background: rgba(108, 117, 125, 0.9) !important;
+    border: 1px solid rgba(108, 117, 125, 0.6) !important;
+}

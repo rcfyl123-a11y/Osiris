@@ -1,0 +1,85 @@
+/* Добавить в base.css - Универсальные стили тостов */
+
+.toast-container {
+    max-width: 400px;
+}
+
+.message-toast {
+    backdrop-filter: blur(10px);
+    border-radius: 12px !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    margin-bottom: 0.5rem;
+    border: 1px solid transparent !important;
+}
+
+.toast-body {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+/* Базовые цвета тостов (нейтральные) */
+.message-toast[data-message-type="success"] {
+    background: rgba(25, 135, 84, 0.95) !important;
+    color: white !important;
+}
+
+.message-toast[data-message-type="error"],
+.message-toast[data-message-type="danger"] {
+    background: rgba(220, 53, 69, 0.95) !important;
+    color: white !important;
+}
+
+.message-toast[data-message-type="warning"] {
+    background: rgba(255, 193, 7, 0.95) !important;
+    color: black !important;
+}
+
+.message-toast[data-message-type="info"] {
+    background: rgba(13, 110, 253, 0.95) !important;
+    color: white !important;
+}
+
+.message-toast[data-message-type="secondary"] {
+    background: rgba(108, 117, 125, 0.95) !important;
+    color: white !important;
+}
+
+/* Иконки наследуют цвет текста */
+.message-toast .toast-body i {
+    color: inherit !important;
+}
+
+/* Кнопка закрытия адаптируется под тему */
+.message-toast[data-message-type="warning"] .btn-close {
+    filter: invert(1) !important;
+}
+
+.message-toast:not([data-message-type="warning"]) .btn-close {
+    filter: invert(0) !important;
+}
+
+/* Анимации для тостов */
+.toast.show {
+    animation: toastSlideIn 0.3s ease-out;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 576px) {
+    .toast-container {
+        max-width: 90%;
+        left: 5%;
+        right: 5%;
+    }
+}

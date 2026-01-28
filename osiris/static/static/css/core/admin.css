@@ -1,0 +1,504 @@
+/* path: src/osiris/static/css/core/admin.css
+ * Назначение: оформление кастомной админки Osiris.
+ * Опирается на токены темы (surface-*, border-weak, shadow-*), задаваемые в theme/*.css.
+ */
+
+/* ---------- Лейаут админки ---------- */
+
+body.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--bs-body-bg);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Левая колонка — сайдбар */
+.admin-sidebar {
+    width: 260px;
+    background: var(--surface-1);
+    border-right: 1px solid var(--border-weak);
+    display: flex;
+    flex-direction: column;
+    transition: transform .2s ease-out, box-shadow .2s ease-out, width .2s ease-out;
+    z-index: 1020;
+}
+
+/* Правая часть — контент + хедер */
+.admin-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--surface-0);
+}
+
+/* ---------- Хедер админки ---------- */
+
+.admin-header {
+    position: sticky;
+    top: 0;
+    z-index: 1010;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1.5rem;
+    border-bottom: 1px solid var(--border-weak);
+    background: var(--surface-1);
+}
+
+.admin-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.admin-header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Кнопка сворачивания сайдбара */
+.sidebar-toggle {
+    border: none;
+    background: transparent;
+    color: var(--bs-body-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    transition: background-color .18s ease-out, transform .18s ease-out;
+}
+
+.sidebar-toggle:hover {
+    background-color: rgba(var(--bs-primary-rgb, 13,110,253), .08);
+    transform: translateY(-1px);
+}
+
+/* ---------- Область контента ---------- */
+
+.admin-content {
+    flex: 1;
+    padding: 1.5rem 1.5rem 2rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Хлебные крошки */
+.breadcrumb-nav {
+    margin-bottom: .75rem;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+}
+
+/* ---------- Сайдбар: шапка и бренд ---------- */
+
+.sidebar-header {
+    padding: 1rem 1.25rem .75rem;
+    border-bottom: 1px solid var(--border-weak);
+}
+
+.sidebar-header .brand {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--bs-primary-rgb, 13,110,253), .15);
+    color: var(--bs-primary);
+    box-shadow: var(--shadow-1);
+}
+
+.brand-icon i {
+    font-size: 1.2rem;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.brand-text strong {
+    font-size: 1rem;
+}
+
+.brand-text small {
+    font-size: .75rem;
+    opacity: .7;
+}
+
+/* ---------- Навигация внутри сайдбара ---------- */
+
+.sidebar-nav {
+    padding: .75rem .75rem 1.5rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.nav-section {
+    margin-bottom: 1.25rem;
+}
+
+.nav-section-title {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    opacity: .6;
+    padding: .25rem .75rem;
+    margin-bottom: .35rem;
+}
+
+/* Важное: стилизуем ТОЛЬКО ссылки внутри .sidebar-nav */
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .45rem .75rem;
+    /* вот это как раз даёт зазор между пунктами */
+    margin: .19rem 0;
+    border-radius: .75rem;
+    font-size: .875rem;
+    color: var(--bs-body-color);
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-link i {
+    width: 18px;
+    text-align: center;
+    opacity: .9;
+}
+
+.sidebar-nav .nav-link .badge {
+    margin-left: auto;
+    font-size: .7rem;
+}
+
+/* Цвета активной/hover-ссылки доопределяются в theme/light.css и др.,
+ * здесь оставляем только базовый эффект */
+.sidebar-nav .nav-link:hover {
+    background-color: rgba(var(--bs-primary-rgb, 13,110,253), .08);
+}
+
+.sidebar-nav .nav-link.active {
+    font-weight: 600;
+}
+
+/* ---------- Состояние "collapsed" для сайдбара (десктоп) ---------- */
+
+.admin-sidebar.collapsed {
+    width: 72px;
+}
+
+/* Чуть расширяем полезную ширину при коллапсе */
+.admin-main.sidebar-collapsed .admin-content {
+    max-width: calc(1200px + 188px);
+}
+
+/* Прячем текст и служебные подписи, оставляем только иконки */
+.admin-sidebar.collapsed .brand-text,
+.admin-sidebar.collapsed .nav-section-title,
+.admin-sidebar.collapsed .nav-link span,
+.admin-sidebar.collapsed .nav-link .badge {
+    display: none;
+}
+
+/* Иконки по центру */
+.admin-sidebar.collapsed .nav-link {
+    justify-content: center;
+}
+
+/* ---------- Меню пользователя в хедере ---------- */
+
+.user-menu .user-btn {
+    border: none;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .2rem .4rem;
+    border-radius: 999px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--bs-primary-rgb, 13,110,253), .15);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: .9rem;
+}
+
+.user-name {
+    font-size: .875rem;
+}
+
+/* ---------- Карточки админки ---------- */
+
+.admin-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-weak);
+    border-radius: 12px;
+    box-shadow: var(--shadow-1);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: transform .18s ease-out, box-shadow .18s ease-out;
+}
+
+.admin-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-2);
+}
+
+.admin-card .card-header {
+    border-bottom: 1px solid var(--border-weak);
+    padding: .75rem 1rem;
+    background: var(--surface-1);
+}
+
+.admin-card .card-title {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.admin-card .card-body {
+    padding: 1.1rem 1.25rem 1.25rem;
+}
+
+/* Вложенные admin-card — без тени и с меньшими отступами */
+.admin-card .admin-card {
+    box-shadow: none;
+    margin-bottom: 1rem;
+}
+
+.admin-card .admin-card .card-body {
+    padding: .9rem 1rem 1rem;
+}
+
+/* Формы внутри карточек */
+.admin-card .form-label {
+    font-weight: 500;
+    margin-bottom: .25rem;
+}
+
+.admin-card .form-control,
+.admin-card .form-select {
+    border-radius: .5rem;
+}
+
+/* Switch-переключатели в одну линию */
+.admin-card .form-check.form-switch {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+/* Таблица внутри admin-card */
+.admin-card .table {
+    margin-bottom: 0;
+    font-size: .875rem;
+}
+
+.admin-card .table thead th {
+    background: rgba(var(--bs-primary-rgb, 13,110,253), .03);
+    border-bottom: 1px solid var(--border-weak);
+    font-weight: 600;
+}
+
+.admin-card .table tbody tr:hover {
+    background: rgba(var(--bs-primary-rgb, 13,110,253), .03);
+}
+
+/* Кнопки действий в таблицах */
+.admin-card .btn-group.btn-group-sm .btn {
+    border-radius: .4rem;
+}
+
+/* ---------- Статистика на дашборде ---------- */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-weak);
+    border-radius: 12px;
+    box-shadow: var(--shadow-1);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    min-height: 110px;
+}
+
+.stat-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    font-size: 1.25rem;
+}
+
+/* Цветные кружочки иконок */
+.stat-icon.primary {
+    background: rgba(var(--bs-primary-rgb, 13,110,253), .15);
+    color: var(--bs-primary);
+}
+
+.stat-icon.success {
+    background: rgba(var(--bs-success-rgb, 25,135,84), .15);
+    color: var(--bs-success);
+}
+
+.stat-icon.warning {
+    background: rgba(var(--bs-warning-rgb, 255,193,7), .2);
+    color: var(--bs-warning);
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.stat-content p {
+    margin: 0;
+    font-size: .85rem;
+    color: var(--bs-secondary-color, rgba(0,0,0,.6));
+}
+
+/* ---------- Быстрые действия ---------- */
+
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: .4rem;
+    min-width: 160px;
+    padding: .75rem 1rem;
+    border-radius: .9rem;
+    background: var(--surface-1);
+    border: 1px solid var(--border-weak);
+    box-shadow: var(--shadow-1);
+    text-decoration: none;
+    color: inherit;
+    transition:
+            transform .18s ease-out,
+            box-shadow .18s ease-out,
+            background-color .18s ease-out;
+}
+
+.action-btn i {
+    font-size: 1.3rem;
+    opacity: .85;
+}
+
+.action-btn span {
+    font-size: .85rem;
+    font-weight: 500;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-2);
+    background: var(--surface-card);
+    text-decoration: none;
+}
+
+/* Опасная зона — небольшой акцент по тексту */
+.admin-card .card-title.text-danger {
+    font-weight: 600;
+}
+
+/* ---------- Адаптивность ---------- */
+
+@media (max-width: 991.98px) {
+    body.admin-layout {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        height: 100vh;
+        box-shadow: var(--shadow-2);
+    }
+
+    /* При открытом сайдбаре — класс на самом сайдбаре (mobile-open), его переключает JS */
+    .admin-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .admin-content {
+        padding: 1rem 1rem 2rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 992px) {
+    .admin-sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        transform: none !important;
+    }
+}

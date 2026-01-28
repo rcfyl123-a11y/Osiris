@@ -1,0 +1,79 @@
+/* path: src/osiris/static/css/theme/light.css */
+/* Светлая тема. Все правила — ТОЛЬКО под [data-bs-theme="light"] */
+[data-bs-theme="light"] {
+    --surface-1: #ffffff;
+    --surface-card: #ffffff;
+    --border-weak: rgba(0,0,0,.075);
+    --shadow-1: 0 2px 8px rgba(0,0,0,.08);
+    --shadow-2: 0 8px 25px rgba(0,0,0,.15);
+
+    --feature-bg: #ffffff;
+    --feature-border: rgba(0,0,0,.08);
+    --feature-shadow: var(--shadow-1);
+}
+
+/* Навбар стеклянный под светлую тему */
+[data-bs-theme="light"] .glass-effect {
+    background: rgba(255,255,255,.9) !important;
+    border-bottom: 1px solid rgba(0,0,0,.06) !important;
+}
+
+
+
+
+
+/* Светлая тема - тосты (опционально) */
+[data-bs-theme="light"] .message-toast {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+/* path: src/osiris/static/css/theme/light.css */
+[data-bs-theme="light"] {
+    --surface-1: #f8f9fa;
+    --surface-card: #ffffff;
+    --border-weak: rgba(0,0,0,.12);
+    --shadow-1: 0 2px 8px rgba(0,0,0,.1);
+    --shadow-2: 0 8px 30px rgba(0,0,0,.15);
+
+    /* Фиче-карточки */
+    --feature-bg: #ffffff;
+    --feature-border: rgba(0,0,0,.14);
+    --feature-shadow: 0 4px 12px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+[data-bs-theme="light"] .text-body-secondary {
+    color: rgba(0,0,0,.72) !important;
+}
+
+[data-bs-theme="light"] .glass-effect {
+    background: rgba(248,249,250,.95) !important;
+    border-bottom: 1px solid rgba(0,0,0,.1) !important;
+}
+
+[data-bs-theme="light"] .ibm-sidebar {
+    background-color: var(--surface-1);
+    border-right: 1px solid var(--border-weak);
+}
+
+[data-bs-theme="light"] .sidebar-nav .nav-link {
+    color: var(--bs-body-color) !important;
+}
+
+[data-bs-theme="light"] .sidebar-nav .nav-link:hover {
+    background-color: var(--bs-primary) !important;
+    color: white !important;
+}
+
+[data-bs-theme="light"] .sidebar-nav .nav-link.active {
+    background-color: var(--bs-primary) !important;
+    color: white !important;
+}
+
+/* Стили для таблицы в светлой теме */
+[data-bs-theme="light"] .data-table th {
+    background: var(--bs-light);
+    border-right: 1px solid var(--bs-gray-300);
+}
+
+[data-bs-theme="light"] .data-table td {
+    border-right: 1px solid var(--bs-gray-200);
+}

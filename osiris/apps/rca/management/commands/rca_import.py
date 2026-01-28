@@ -7,6 +7,7 @@ from osiris.apps.rca.service.rca_import_service import RcaImportService
 
 
 class Command(BaseCommand):
+    # rca_import --until-empty
     help = "Import hashed RCA sets from DuckDB into Django models (ORG/POST/EMPLOYEE + history)."
 
     def add_arguments(self, parser):

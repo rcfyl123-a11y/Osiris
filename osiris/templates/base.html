@@ -1,58 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- path: src/osiris/templates/base.html -->
+{% load static %}
+<!doctype html>
+<html lang="ru" data-bs-theme="dark">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}Osiris{% endblock %}</title>
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-        crossorigin="anonymous"
-    >
-</head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" href="/">Osiris</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="/blog/">Blog</a>
-                </li>
-            </ul>
-            <div class="d-flex align-items-center gap-3">
-                <span class="navbar-text text-white">
-                    {% block navbar_extra %}{% endblock %}
-                </span>
-                {% if user.is_authenticated %}
-                    <span class="navbar-text text-white">
-                        Привет, {{ user.username }}
-                    </span>
-                    <form method="post" action="{% url 'logout' %}" class="mb-0">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-light btn-sm">Выйти</button>
-                    </form>
-                {% else %}
-                    <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">Вход</a>
-                    <a class="btn btn-primary btn-sm" href="{% url 'signup' %}">Регистрация</a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</nav>
 
-<main class="container py-5">
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/base.css' %}" rel="stylesheet">
+    <link href="{% static 'css/toast.css' %}" rel="stylesheet">
+    <link href="{% static 'css/theme/light.css' %}" rel="stylesheet">
+    <link href="{% static 'css/theme/dark.css' %}" rel="stylesheet">
+    <link href="{% static 'css/theme/contrast.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    {% block css %}{% endblock %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+<a class="visually-hidden-focusable skip-link" href="#content">К содержимому</a>
+
+{% include "components/navbar.html" %}
+
+<main id="content" class="container py-4 flex-grow-1">
+    {% include "components/toast.html" %}
     {% block content %}{% endblock %}
 </main>
 
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-    crossorigin="anonymous"
-></script>
+{% include "components/footer.html" %}
+
+<script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+{% block js %}{% endblock %}
+
+{% if debug %}
+    <!-- Debug Toolbar -->
+    <script>
+        // Фикс для корректного позиционирования
+        if (window.jQuery) {
+            $(document).ready(function() {
+                // Debug Toolbar иногда конфликтует с fixed/sticky элементами
+                var toolbar = $('#djDebug');
+                if (toolbar.length) {
+                    toolbar.css('z-index', '9999');
+                }
+            });
+        }
+    </script>
+{% endif %}
+
 </body>
 </html>

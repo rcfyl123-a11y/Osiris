@@ -1,0 +1,325 @@
+/* path: src/osiris/static/css/base.css */
+/* Нейтральный слой (без цветов темы). Всё, что «про верстку/эффекты», а не «про палитру». */
+/* path: src/osiris/static/css/base.css */
+/* Назначение: базовые (нейтральные) стили Osiris: верстка, анимации, эффекты.
+ * Цвета и палитра — в theme/*.css, здесь только токены и структура.
+ */
+
+/* Токены и общие переменные */
+:root {
+    --focus-ring: 0 0 0 .25rem rgba(13,110,253,.25);
+    --transition-base: all .2s ease-in-out;
+
+    /* Поверхности — конкретные значения задаются в темах */
+    --surface-0: transparent;
+    --surface-1: var(--bs-body-bg);
+    --surface-card: var(--bs-body-bg);
+
+    --border-weak: var(--bs-border-color);
+    --shadow-1: 0 2px 8px rgba(0,0,0,.08);
+    --shadow-2: 0 8px 25px rgba(0,0,0,.15);
+
+    /* Для feature-card — можно переопределить в теме */
+    --feature-bg: var(--surface-card);
+    --feature-border: var(--border-weak);
+    --feature-shadow: var(--shadow-1);
+}
+
+/* Фокус */
+:focus-visible {
+    outline: none !important;
+    box-shadow: var(--focus-ring);
+}
+
+/* Плавное появление страницы (после инициализации JS добавляем body.loaded) */
+body {
+    line-height: 1.6;
+    scroll-padding-top: 4rem;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+}
+
+body.loaded {
+    opacity: 1;
+}
+
+/* Skip-link для доступности */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.skip-link:focus {
+    position: fixed;
+    left: .5rem;
+    top: .5rem;
+    width: auto;
+    height: auto;
+    padding: .5rem .75rem;
+    z-index: 1080;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+}
+
+/* Базовые переходы для основных компонентов */
+.navbar,
+.btn,
+.dropdown-menu,
+.alert {
+    transition: var(--transition-base);
+}
+
+/* Навбар */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+/* Ссылки в навбаре */
+.nav-link {
+    position: relative;
+    font-weight: 500;
+    border-radius: 6px;
+    margin: 0 2px;
+    transition: var(--transition-base);
+}
+
+.nav-link.active {
+    font-weight: 600;
+}
+
+/* Подчёркивание ТОЛЬКО для обычных ссылок, не dropdown-toggle.
+ * Иначе ломается caret у выпадающих списков (DB2 и т.п.).
+ */
+.nav-link:not(.dropdown-toggle)::after {
+    content: '';
+    position: absolute;
+    bottom: -0.15rem;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--bs-primary);
+    transition: width .25s ease;
+}
+
+.nav-link:not(.dropdown-toggle).active::after,
+.nav-link:not(.dropdown-toggle):hover::after {
+    width: 100%;
+}
+
+/* Стек сообщений */
+.messages-stack .alert {
+    margin-bottom: .5rem;
+    border-radius: 8px;
+}
+
+/* Анимация появления алертов */
+.alert {
+    animation: slideInDown .3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Футер прижат к низу (через flex-контейнер на body) */
+footer {
+    margin-top: auto !important;
+}
+
+/* Компактные таблицы */
+.table-sm td,
+.table-sm th {
+    padding: .35rem .5rem;
+}
+
+/* Кнопки */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-base);
+}
+
+/* Лёгкий "блик" при ховере по кнопке */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;          /* начинаем слева */
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.2),
+            transparent
+    );
+    transition: left .5s;
+    pointer-events: none; /* не перекрываем клики */
+}
+
+.btn:hover::before {
+    left: 100%;           /* уезжаем вправо */
+}
+
+/* Выпадающие меню */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    border-radius: 8px;
+    animation: dropdownFade .2s ease-out;
+}
+
+@keyframes dropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Утилиты */
+.text-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Карточки — базовый стиль через токены темы */
+.card {
+    border: 1px solid var(--border-weak);
+    background: var(--surface-card);
+    border-radius: 12px;
+    box-shadow: var(--shadow-1);
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2) !important;
+}
+
+/* Фиче-карточки: отдельный слой на базе токенов */
+.feature-card {
+    background: var(--feature-bg) !important;
+    border: 1px solid var(--feature-border) !important;
+    box-shadow: var(--feature-shadow) !important;
+    border-radius: 12px;
+    transition:
+            transform .2s ease-in-out,
+            box-shadow .2s ease-in-out;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+}
+
+.feature-icon {
+    transition: transform .3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+/* «Стеклянный» навбар — цвета задаёт тема */
+.glass-effect {
+    border: none !important;
+    backdrop-filter: blur(10px);
+}
+
+/* ---- Таблицы данных (ibm_db2 и не только) ---- */
+
+.table-container {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.table-container-horizontal {
+    overflow-x: auto;
+}
+
+.sticky-header th {
+    position: sticky;
+    top: 0;
+    background: var(--bs-table-bg);
+    z-index: 10;
+    border-bottom: 2px solid var(--bs-border-color);
+}
+
+.data-table {
+    width: auto;
+    min-width: 100%;
+}
+
+.data-table th,
+.data-table td {
+    min-width: 120px;
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 6px 8px;
+    vertical-align: middle;
+}
+
+.data-table th {
+    background: var(--bs-table-bg);
+    font-weight: 600;
+    border-right: 1px solid var(--bs-border-color);
+}
+
+.data-table td {
+    border-right: 1px solid var(--bs-border-color-translucent);
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+    border-right: none;
+}
+
+.column-tooltip {
+    cursor: help;
+}
+
+/* Специфичные стили для больших результатов */
+.large-result-warning {
+    background-color: var(--bs-warning-bg-subtle);
+    border: 1px solid var(--bs-warning-border-subtle);
+    border-radius: 4px;
+    padding: 12px;
+    margin: 10px 0;
+}
+
+/* Группы кнопок с отступами */
+.btn-group-spaced .btn {
+    margin-right: 0.5rem;
+}
+
+/* Стили для карточек форм */
+.form-card .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}

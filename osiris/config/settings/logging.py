@@ -87,7 +87,7 @@ LOGGING = {
         "loguru": {
             # вместо "class": "..." — фабрика "()": передаём сам класс
             "()": LoguruHandler,
-            "level": "DEBUG",  # сюда пускаем всё, режет уже Loguru
+            "level": "INFO",  # сюда пускаем всё, режет уже Loguru
         },
     },
     "root": {
@@ -102,15 +102,15 @@ LOGGING = {
             "propagate": False,
         },
         # вот эти ребята как раз печатают строки типа "[03/Dec/2025 ...] ..."
-        "django.server": {
-            "handlers": ["loguru"],
-            "level": LOG_LEVEL,
-            "propagate": False,
-        },
-        "django.request": {
-            "handlers": ["loguru"],
-            "level": LOG_LEVEL,
-            "propagate": False,
-        },
+        # "django.server": {
+        #     "handlers": ["loguru"],
+        #     "level": LOG_LEVEL,
+        #     "propagate": False,
+        # },
+        # "django.request": {
+        #     "handlers": ["loguru"],
+        #     "level": LOG_LEVEL,
+        #     "propagate": False,
+        # },
     },
 }

@@ -21,8 +21,8 @@ IBM_DB_HOME = PROJECT_DIR / "data" / "clidriver"
 RCA_APP_DIR = PROJECT_DIR / "apps" / "rca"
 RCA_DUCKDB_PATH = RCA_APP_DIR / "data" / "rca.duckdb"
 
-# где лежат XML выгрузки (оставь D:\oim_arch как дефолт)
-RCA_XML_DIR = Path(os.environ.get("RCA_XML_DIR", r"D:\oim_arch"))
+# где лежат XML выгрузки (оставь D:\Projects\oim_arch как дефолт)
+RCA_XML_DIR = Path(os.environ.get("RCA_XML_DIR", r"D:\Projects\oim_arch"))
 
 
 if USE_IBM and IBM_DB_HOME.exists() and IBM_DB_HOME.is_dir():

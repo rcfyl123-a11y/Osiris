@@ -1,0 +1,208 @@
+/* path: src/osiris/static/css/theme/contrast.css */
+/* ТЕМА ВЫСОКОГО КОНТРАСТА (HC)
+   Принципы:
+   - Не полагаемся на тени для отделения поверхностей; ставим чёткие контуры.
+   - Цвет текста/фона ~ максимальный контраст (WCAG AA/AAA ориентир).
+   - Ссылки всегда подчёркнуты; фокус — яркий.
+   - Карточки/кнопки имеют видимый контур даже без hover. */
+
+[data-bs-theme="contrast"] {
+    /* Базовые переменные Bootstrap */
+    --bs-body-bg: #000000;
+    --bs-body-color: #ffffff;
+    --bs-border-color: #ffffff;       /* общий контур — белый */
+    --bs-link-color: #64d2ff;         /* читаемый голубой */
+    --bs-link-hover-color: #a0e4ff;
+    --bs-focus-ring-color: #ffd60a;   /* яркая жёлтая обводка */
+
+    /* Палитра акцентных */
+    --bs-primary: #ffd60a;   /* жёлтый на чёрном читается отлично */
+    --bs-success: #39d353;   /* зелёный GitHub-like */
+    --bs-danger:  #ff453a;   /* алый */
+    --bs-warning: #ffd60a;
+    --bs-info:    #64d2ff;
+
+    /* Токены «поверхностей» нашего слоя */
+    --surface-1: #000000;
+    --surface-card: #0a0a0a;                 /* немного светлее body */
+    --border-weak: #ffffff;
+    --shadow-1: none;                        /* тени не используем */
+    --shadow-2: none;
+
+    --feature-bg: #0a0a0a;
+    --feature-border: #ffffff;
+    --feature-shadow: none;
+}
+
+/* Фокус — заметный кольцевой */
+[data-bs-theme="contrast"] :focus-visible {
+    outline: 2px solid #ffd60a !important;
+    outline-offset: 2px;
+    box-shadow: none !important;
+}
+
+/* Ссылки — всегда подчёркнуты */
+[data-bs-theme="contrast"] a {
+    text-decoration: underline;
+    text-underline-offset: .15em;
+}
+
+/* Навбар — плотный контур снизу */
+[data-bs-theme="contrast"] .glass-effect {
+    background: #000 !important;
+    border-bottom: 2px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+/* Кнопки: высокая читаемость и контур всегда виден */
+[data-bs-theme="contrast"] .btn {
+    border-width: 2px !important;
+    border-color: #ffffff !important;
+    box-shadow: none !important;
+}
+[data-bs-theme="contrast"] .btn-primary {
+    background: var(--bs-primary) !important;
+    color: #000 !important;
+}
+[data-bs-theme="contrast"] .btn-outline-primary {
+    color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+}
+[data-bs-theme="contrast"] .btn-outline-primary:hover {
+    background: var(--bs-primary) !important;
+    color: #000 !important;
+}
+
+/* Карточки — явный фон и контур даже без hover */
+[data-bs-theme="contrast"] .card,
+[data-bs-theme="contrast"] .feature-card {
+    background: var(--surface-card) !important;
+    border: 2px solid var(--border-weak) !important;
+    box-shadow: none !important;
+}
+[data-bs-theme="contrast"] .feature-card:hover,
+[data-bs-theme="contrast"] .card:hover {
+    transform: translateY(-2px); /* небольшой сдвиг для отклика */
+}
+
+/* Вторичный текст — тоже высокий контраст */
+[data-bs-theme="contrast"] .text-body-secondary {
+    color: #e6e6e6 !important;
+}
+
+/* Выпадающее меню — явный контур */
+[data-bs-theme="contrast"] .dropdown-menu {
+    background: #000 !important;
+    color: #fff !important;
+    border: 2px solid #fff !important;
+    box-shadow: none !important;
+}
+
+/* Статусы /health/ без градиентов — сплошной фон + контур */
+[data-bs-theme="contrast"] .health-status-loading {
+    background: #001233 !important;
+    border: 2px solid #64d2ff !important;
+    color: #64d2ff !important;
+}
+[data-bs-theme="contrast"] .health-status-success {
+    background: #001a09 !important;
+    border: 2px solid #39d353 !important;
+    color: #39d353 !important;
+}
+[data-bs-theme="contrast"] .health-status-error {
+    background: #2a0003 !important;
+    border: 2px solid #ff453a !important;
+    color: #ff453a !important;
+}
+
+/* Поддержка системного режима повышенного контраста (где есть) */
+@media (prefers-contrast: more) {
+    [data-bs-theme="contrast"] .card,
+    [data-bs-theme="contrast"] .feature-card,
+    [data-bs-theme="contrast"] .btn,
+    [data-bs-theme="contrast"] .dropdown-menu {
+        border-width: 2px !important;
+    }
+}
+
+/* Более стильная версия навбара для high contrast */
+[data-bs-theme="contrast"] .glass-effect {
+    background: #000000 !important;
+    border-bottom: 3px solid #ffd60a !important; /* Желтая акцентная линия */
+}
+
+[data-bs-theme="contrast"] .navbar-brand {
+    color: #ffd60a !important; /* Желтый логотип */
+    font-weight: bold;
+    text-decoration: none !important;
+}
+
+[data-bs-theme="contrast"] .nav-link {
+    color: #ffffff !important;
+    border: 2px solid transparent !important;
+    margin: 0 4px !important;
+}
+
+[data-bs-theme="contrast"] .nav-link.active {
+    background-color: #ffd60a !important;
+    color: #ffffff !important;
+    border: 2px solid #ffd60a !important;
+    font-weight: bold;
+}
+
+[data-bs-theme="contrast"] .nav-link:hover:not(.active) {
+    border: 2px solid #ffd60a !important;
+    background-color: transparent !important;
+}
+
+
+
+
+
+
+
+
+
+/* Тема высокого контраста - тосты */
+[data-bs-theme="contrast"] .message-toast {
+    border: 2px solid #ffffff !important;
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="contrast"] .message-toast[data-message-type="success"] {
+    border-color: #39d353 !important;
+    background: #001a09 !important;
+}
+
+[data-bs-theme="contrast"] .message-toast[data-message-type="error"],
+[data-bs-theme="contrast"] .message-toast[data-message-type="danger"] {
+    border-color: #ff453a !important;
+    background: #2a0003 !important;
+}
+
+[data-bs-theme="contrast"] .message-toast[data-message-type="warning"] {
+    border-color: #ffd60a !important;
+    background: #332900 !important;
+    color: #ffd60a !important;
+}
+
+[data-bs-theme="contrast"] .message-toast[data-message-type="info"] {
+    border-color: #64d2ff !important;
+    background: #001233 !important;
+}
+
+[data-bs-theme="contrast"] .message-toast[data-message-type="secondary"] {
+    border-color: #e6e6e6 !important;
+    background: #1a1a1a !important;
+}
+
+/* Иконки в контрастной теме */
+[data-bs-theme="contrast"] .message-toast .toast-body i {
+    color: inherit !important;
+}
+
+/* Кнопка закрытия в контрастной теме */
+[data-bs-theme="contrast"] .btn-close {
+    filter: invert(1) !important;
+}
