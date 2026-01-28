@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Орг.единица {{ org.code }} | Osiris{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <a class="text-decoration-none small text-muted" href="{% url 'rca:org_list' %}">
+            <i class="fas fa-arrow-left me-1"></i>К списку орг.единиц
+        </a>
+        <h1 class="h3 mb-1">Орг.единица {{ org.code }}</h1>
+        <p class="text-muted mb-0">{{ current.full_name|default:"Полное название отсутствует" }}</p>
+    </div>
+    <a class="btn btn-outline-primary" href="{% url 'rca:employee_list' %}?org={{ org.code }}">
+        <i class="fas fa-filter me-2"></i>Сотрудники в этой орг.единице
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Текущие данные</h2>
+                <dl class="row mb-0">
+                    <dt class="col-5 text-muted">Код</dt>
+                    <dd class="col-7">{{ org.code }}</dd>
+                    <dt class="col-5 text-muted">Название</dt>
+                    <dd class="col-7">{{ current.name|default:"—" }}</dd>
+                    <dt class="col-5 text-muted">Полное название</dt>
+                    <dd class="col-7">{{ current.full_name|default:"—" }}</dd>
+                    <dt class="col-5 text-muted">Родитель</dt>
+                    <dd class="col-7">{{ current.parent_code|default:"—" }}</dd>
+                    <dt class="col-5 text-muted">Действует с</dt>
+                    <dd class="col-7">{{ current.valid_from|default:"—" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Сотрудники (актуальные)</h2>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ФИО</th>
+                                <th>Должность</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for snapshot in employees %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'rca:employee_detail' snapshot.employee.snils_norm %}">
+                                            {{ snapshot.employee.last_name }} {{ snapshot.employee.first_name }} {{ snapshot.employee.middle_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ snapshot.post.code }}</td>
+                                    <td>
+                                        {% if snapshot.employee.is_fired_current %}
+                                            <span class="badge bg-secondary">Уволен</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Активен</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Нет сотрудников.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-body">
+        <h2 class="h5">История изменений</h2>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Версия</th>
+                        <th>Название</th>
+                        <th>Родитель</th>
+                        <th>Период</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for version in versions %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ version.name }}</td>
+                            <td>{{ version.parent_code|default:"—" }}</td>
+                            <td>{{ version.valid_from }} — {{ version.valid_to|default:"∞" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">История отсутствует.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

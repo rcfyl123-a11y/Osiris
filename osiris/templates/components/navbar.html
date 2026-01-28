@@ -15,6 +15,30 @@
                         <a class="nav-link {% if p == '/' %}active{% endif %}" href="/">Главная</a>
                     </li>
 
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if p|slice:':5' == '/rca/' %}active{% endif %}"
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            RCA
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'rca:org_list' %}">
+                                    <i class="fas fa-sitemap me-2"></i>Орг.структура
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'rca:post_list' %}">
+                                    <i class="fas fa-id-badge me-2"></i>Должности
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'rca:employee_list' %}">
+                                    <i class="fas fa-users me-2"></i>Сотрудники
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link {% if p|slice:':8' == '/health/' or p == '/health/' %}active{% endif %}"
                            href="/health/">

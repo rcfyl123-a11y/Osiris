@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Сотрудники | Osiris{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Сотрудники</h1>
+        <p class="text-muted mb-0">Поиск, фильтры и история перемещений сотрудников.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'rca:org_list' %}">
+            <i class="fas fa-sitemap me-2"></i>Орг.структура
+        </a>
+        <a class="btn btn-outline-secondary" href="{% url 'rca:post_list' %}">
+            <i class="fas fa-id-badge me-2"></i>Должности
+        </a>
+    </div>
+</div>
+
+<form method="get" class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-xl-4">
+                <label class="form-label">Поиск по ФИО, СНИЛС, табелю</label>
+                <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="Например: Иванов или 112-233-445 95">
+            </div>
+            <div class="col-12 col-md-6 col-xl-2">
+                <label class="form-label">Орг.единица</label>
+                <select class="form-select" name="org">
+                    <option value="">Все</option>
+                    {% for org in org_choices %}
+                        <option value="{{ org.org.code }}" {% if org.org.code == org_code %}selected{% endif %}>
+                            {{ org.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6 col-xl-2">
+                <label class="form-label">Должность</label>
+                <select class="form-select" name="post">
+                    <option value="">Все</option>
+                    {% for post in post_choices %}
+                        <option value="{{ post.post.code }}" {% if post.post.code == post_code %}selected{% endif %}>
+                            {{ post.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6 col-xl-2">
+                <label class="form-label">Статус</label>
+                <select class="form-select" name="status">
+                    <option value="active" {% if status == "active" %}selected{% endif %}>Только активные</option>
+                    <option value="fired" {% if status == "fired" %}selected{% endif %}>Только уволенные</option>
+                    <option value="all" {% if status == "all" %}selected{% endif %}>Все</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-6 col-xl-2">
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" value="1" id="history" name="history" {% if show_history %}checked{% endif %}>
+                    <label class="form-check-label" for="history">История перемещений</label>
+                </div>
+            </div>
+            <div class="col-12 text-end">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search me-2"></i>Применить фильтры
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ФИО</th>
+                        <th>СНИЛС</th>
+                        <th class="d-none d-lg-table-cell">Табель</th>
+                        <th>Орг.единица</th>
+                        <th>Должность</th>
+                        <th>Статус</th>
+                        {% if show_history %}
+                            <th>Период</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for snapshot in snapshots %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'rca:employee_detail' snapshot.employee.snils_norm %}">
+                                    {{ snapshot.employee.last_name }} {{ snapshot.employee.first_name }} {{ snapshot.employee.middle_name }}
+                                </a>
+                            </td>
+                            <td>{{ snapshot.employee.snils_norm }}</td>
+                            <td class="d-none d-lg-table-cell">{{ snapshot.employee.tab_norm_current|default:"—" }}</td>
+                            <td>
+                                <a href="{% url 'rca:org_detail' snapshot.org.code %}">{{ snapshot.org.code }}</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'rca:post_detail' snapshot.post.code %}">{{ snapshot.post.code }}</a>
+                            </td>
+                            <td>
+                                {% if snapshot.employee.is_fired_current %}
+                                    <span class="badge bg-secondary">Уволен</span>
+                                {% else %}
+                                    <span class="badge bg-success">Активен</span>
+                                {% endif %}
+                            </td>
+                            {% if show_history %}
+                                <td>{{ snapshot.valid_from }} — {{ snapshot.valid_to|default:"∞" }}</td>
+                            {% endif %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="{% if show_history %}7{% else %}6{% endif %}" class="text-center py-4 text-muted">
+                                Ничего не найдено по заданным фильтрам.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

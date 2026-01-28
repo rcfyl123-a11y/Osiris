@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Орг.структура | Osiris{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Организационная структура</h1>
+        <p class="text-muted mb-0">Актуальные и исторические версии организационных единиц.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'rca:employee_list' %}">
+        <i class="fas fa-users me-2"></i>Сотрудники
+    </a>
+</div>
+
+<form method="get" class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-lg-6">
+                <label class="form-label">Поиск по коду, названию, родителю</label>
+                <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="Например: 1002 или Управление">
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" value="1" id="history" name="history" {% if show_history %}checked{% endif %}>
+                    <label class="form-check-label" for="history">Показывать историю</label>
+                </div>
+            </div>
+            <div class="col-12 col-lg-3 text-lg-end">
+                <button class="btn btn-primary w-100 w-lg-auto" type="submit">
+                    <i class="fas fa-search me-2"></i>Найти
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Код</th>
+                        <th>Название</th>
+                        <th class="d-none d-md-table-cell">Полное название</th>
+                        <th>Родитель</th>
+                        {% if show_history %}
+                            <th>Период</th>
+                        {% else %}
+                            <th>Статус</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for version in org_versions %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'rca:org_detail' version.org.code %}">{{ version.org.code }}</a>
+                            </td>
+                            <td>{{ version.name }}</td>
+                            <td class="d-none d-md-table-cell">{{ version.full_name }}</td>
+                            <td>{{ version.parent_code|default:"—" }}</td>
+                            <td>
+                                {% if show_history %}
+                                    {{ version.valid_from }} — {{ version.valid_to|default:"∞" }}
+                                {% else %}
+                                    <span class="badge bg-success">Текущая</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Ничего не найдено.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
