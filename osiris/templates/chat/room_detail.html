@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room.name|default:"Чат" }} · Osiris{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+    <header class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <div>
+            <h1 class="h3 mb-1">
+                {% if room.room_type == "direct" %}
+                    Личный чат
+                {% else %}
+                    {{ room.name|default:"Групповой чат" }}
+                {% endif %}
+            </h1>
+            <p class="text-secondary mb-0">{{ room.description|default:"Описание пока не заполнено." }}</p>
+        </div>
+        <div class="text-secondary small">
+            <div>Создан: {{ room.created_at|date:"d.m.Y H:i" }}</div>
+            {% if room.created_by %}
+                <div>Создатель: {{ room.created_by }}</div>
+            {% endif %}
+            {% if room.org %}
+                <div>Орг. единица: {{ room.org }}</div>
+            {% endif %}
+            {% if room.is_archived %}
+                <span class="badge text-bg-secondary mt-2">Архивная</span>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <section class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">Последние сообщения</span>
+                        <span class="text-secondary small">{{ messages|length }} из 50</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for message in messages %}
+                                <article class="border rounded-3 p-3">
+                                    <div class="d-flex flex-wrap justify-content-between">
+                                        <strong>{{ message.sender|default:"Система" }}</strong>
+                                        <span class="text-secondary small">{{ message.sent_at|date:"d.m.Y H:i" }}</span>
+                                    </div>
+                                    {% if message.reply_to %}
+                                        <div class="alert alert-secondary py-2 small mt-2">
+                                            Ответ на: {{ message.reply_to.sender|default:"Система" }} —
+                                            {{ message.reply_to.body|truncatechars:80 }}
+                                        </div>
+                                    {% endif %}
+                                    <p class="mb-2">{{ message.body|default:"(Сообщение без текста)" }}</p>
+                                    {% if message.attachments.all %}
+                                        <div class="text-secondary small">
+                                            <i class="fa-solid fa-paperclip" aria-hidden="true"></i>
+                                            Вложения:
+                                            {% for attachment in message.attachments.all %}
+                                                <span class="badge text-bg-dark">{{ attachment.original_name|default:attachment.file.name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="mb-1">В комнате пока нет сообщений.</p>
+                            <p class="text-secondary mb-0">Как только они появятся, список обновится.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-xl-4">
+            <section class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <span class="fw-semibold">Участники</span>
+                </div>
+                <div class="card-body">
+                    {% if memberships %}
+                        <ul class="list-unstyled mb-0">
+                            {% for membership in memberships %}
+                                <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span>{{ membership.user }}</span>
+                                    <span class="badge text-bg-secondary">{{ membership.get_role_display }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-secondary mb-0">Участники пока не добавлены.</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <span class="fw-semibold">Параметры комнаты</span>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-5 text-secondary">Тип</dt>
+                        <dd class="col-7 mb-2">{{ room.get_room_type_display }}</dd>
+                        <dt class="col-5 text-secondary">Сообщений</dt>
+                        <dd class="col-7 mb-2">{{ room.messages.count }}</dd>
+                        <dt class="col-5 text-secondary">В архиве</dt>
+                        <dd class="col-7 mb-0">{% if room.is_archived %}Да{% else %}Нет{% endif %}</dd>
+                    </dl>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
