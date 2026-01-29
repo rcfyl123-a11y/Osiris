@@ -1,5 +1,5 @@
 <!-- path: src/osiris/templates/base.html -->
-{% load static messages %}
+{% load static %}
 <!doctype html>
 <html lang="ru" data-bs-theme="dark">
 <head>
@@ -25,7 +25,6 @@
 {% include "components/navbar.html" %}
 
 <main id="content" class="container py-4 flex-grow-1">
-    {% get_messages as toast_messages %}
     {% include "components/toast.html" with messages=toast_messages %}
     {% block content %}{% endblock %}
 </main>
