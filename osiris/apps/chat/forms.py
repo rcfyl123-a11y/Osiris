@@ -18,6 +18,15 @@ class MultiFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
 
+class MultiFileField(forms.FileField):
+    def clean(self, data, initial=None):
+        if data in (None, "", []):
+            return []
+        if not isinstance(data, (list, tuple)):
+            data = [data]
+        return [super().clean(item, initial) for item in data]
+
+
 @dataclass(frozen=True)
 class AttachmentPolicy:
     max_size: int
@@ -46,7 +55,7 @@ class ChatMessageForm(forms.Form):
         required=False,
     )
     reply_to = forms.IntegerField(widget=forms.HiddenInput, required=False)
-    attachments = forms.FileField(
+    attachments = MultiFileField(
         label="Вложения",
         required=False,
         widget=MultiFileInput(attrs={"multiple": True, "class": "form-control"}),
@@ -59,13 +68,13 @@ class ChatMessageForm(forms.Form):
     def clean(self) -> dict:
         cleaned = super().clean()
         body = (cleaned.get("body") or "").strip()
-        files = self.files.getlist("attachments")
+        files = cleaned.get("attachments") or []
         if not body and not files:
             raise ValidationError("Нужно добавить текст или вложение.")
         return cleaned
 
     def clean_attachments(self):
-        files = self.files.getlist("attachments")
+        files = self.cleaned_data.get("attachments") or []
         for file in files:
             self._validate_file(file)
         return files
