@@ -37,6 +37,8 @@ ROOM_TYPE_OPTIONS = {
     "direct": "Личные",
 }
 
+ATTACHMENTS_PREVIEW_LIMIT = 20
+
 
 def _epoch() -> datetime:
     return datetime(1970, 1, 1, tzinfo=timezone.UTC)
@@ -82,6 +84,17 @@ def _build_content_disposition(disposition: str, filename: str) -> str:
     ascii_fallback = safe_name.encode("ascii", "ignore").decode("ascii") or "attachment"
     quoted_name = quote(safe_name)
     return f"{disposition}; filename=\"{ascii_fallback}\"; filename*=UTF-8''{quoted_name}"
+
+
+def _get_room_attachments(room: ChatRoom) -> tuple[list[ChatAttachment], int]:
+    if room.room_type != ChatRoom.RoomType.DIRECT:
+        return [], 0
+    attachments_qs = (
+        ChatAttachment.objects.filter(message__room=room, message__is_deleted=False)
+        .select_related("message", "message__sender")
+        .order_by("-uploaded_at")
+    )
+    return list(attachments_qs[:ATTACHMENTS_PREVIEW_LIMIT]), attachments_qs.count()
 
 
 @login_required
@@ -160,6 +173,7 @@ def room_detail(request: HttpRequest, room_id: int) -> HttpResponse:
         f"Допустимые типы: {', '.join(settings.CHAT_ALLOWED_CONTENT_TYPES)}. "
         f"Максимум {max_size_mb:.0f} МБ."
     )
+    room_attachments, room_attachments_count = _get_room_attachments(room)
 
     ChatMembership.objects.filter(pk=membership.pk).update(last_read_at=timezone.now())
 
@@ -177,6 +191,8 @@ def room_detail(request: HttpRequest, room_id: int) -> HttpResponse:
         "polling_interval": settings.CHAT_POLLING_INTERVAL_SECONDS,
         "last_message_at": last_message_at,
         "attachment_help": attachment_help,
+        "room_attachments": room_attachments,
+        "room_attachments_count": room_attachments_count,
     }
     return render(request, "chat/room_detail.html", context)
 
@@ -203,6 +219,7 @@ def send_message(request: HttpRequest, room_id: int) -> HttpResponse:
             f"Допустимые типы: {', '.join(settings.CHAT_ALLOWED_CONTENT_TYPES)}. "
             f"Максимум {max_size_mb:.0f} МБ."
         )
+        room_attachments, room_attachments_count = _get_room_attachments(room)
         context = {
             "room": room,
             "memberships": memberships,
@@ -217,6 +234,8 @@ def send_message(request: HttpRequest, room_id: int) -> HttpResponse:
             "polling_interval": settings.CHAT_POLLING_INTERVAL_SECONDS,
             "last_message_at": list(recent_messages)[-1].sent_at if recent_messages else None,
             "attachment_help": attachment_help,
+            "room_attachments": room_attachments,
+            "room_attachments_count": room_attachments_count,
         }
         return render(request, "chat/room_detail.html", context, status=status)
 
@@ -278,6 +297,7 @@ def edit_message(request: HttpRequest, room_id: int, message_id: int) -> HttpRes
             f"Допустимые типы: {', '.join(settings.CHAT_ALLOWED_CONTENT_TYPES)}. "
             f"Максимум {max_size_mb:.0f} МБ."
         )
+        room_attachments, room_attachments_count = _get_room_attachments(room)
         context = {
             "room": room,
             "memberships": memberships,
@@ -294,6 +314,8 @@ def edit_message(request: HttpRequest, room_id: int, message_id: int) -> HttpRes
             "attachment_help": attachment_help,
             "edit_form": form,
             "edit_message_id": message.id,
+            "room_attachments": room_attachments,
+            "room_attachments_count": room_attachments_count,
         }
         return render(request, "chat/room_detail.html", context, status=status)
 
