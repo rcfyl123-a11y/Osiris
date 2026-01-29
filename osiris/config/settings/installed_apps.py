@@ -47,7 +47,11 @@ def _resolve_app_config(app_name: str) -> str | None:
 
     candidates = []
     direct_config = getattr(apps_module, "AppConfig", None)
-    if isinstance(direct_config, type) and issubclass(direct_config, AppConfig):
+    if (
+        isinstance(direct_config, type)
+        and issubclass(direct_config, AppConfig)
+        and direct_config is not AppConfig
+    ):
         candidates.append(direct_config)
 
     for value in apps_module.__dict__.values():
