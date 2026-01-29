@@ -33,6 +33,18 @@ Osiris — Django-проект с модульной архитектурой и
    python manage.py runserver
    ```
 
+## Локальные проверки (как в CI)
+
+```bash
+python -m compileall osiris
+python osiris/manage.py check
+python osiris/manage.py test
+```
+
+При необходимости переменные окружения можно задать через
+`osiris/config/docker/.env` на основе примера
+`osiris/config/docker/.env.example`.
+
 ## Добавление новых приложений
 
 Чтобы добавить новое приложение:
