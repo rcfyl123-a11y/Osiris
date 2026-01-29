@@ -33,9 +33,9 @@
         </div>
     </header>
 
-    <div class="row g-4">
-        <div class="col-12 col-xl-8">
-            <section class="card border-0 shadow-sm">
+    <div class="row g-4 align-items-stretch">
+        <div class="col-12 col-xl-8 d-flex">
+            <section class="card border-0 shadow-sm flex-grow-1 chat-card-stretch">
                 <div class="card-header bg-transparent">
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="fw-semibold">Последние сообщения</span>
@@ -44,7 +44,7 @@
                 </div>
                 <div class="card-body chat-card-body">
                     {% if messages %}
-                        <div class="chat-scroll" id="chatScrollContainer">
+                        <div class="chat-scroll flex-grow-1" id="chatScrollContainer">
                             <div class="chat-message-list d-flex flex-column gap-3" id="chatMessageList">
                             {% for message in messages %}
                                     <article
@@ -176,7 +176,7 @@
                             </div>
                         </div>
                     {% else %}
-                        <div class="chat-scroll" id="chatScrollContainer">
+                        <div class="chat-scroll flex-grow-1" id="chatScrollContainer">
                             <div class="text-center py-4" id="emptyChatState">
                                 <p class="mb-1">В комнате пока нет сообщений.</p>
                                 <p class="text-secondary mb-0">Как только они появятся, список обновится.</p>
@@ -196,8 +196,14 @@
                             Комната в архиве. Отправка сообщений доступна только администраторам.
                         </div>
                     {% else %}
-                        <form method="post" action="{% url 'chat:send_message' room.id %}" enctype="multipart/form-data">
+                        <form
+                            method="post"
+                            action="{% url 'chat:send_message' room.id %}"
+                            enctype="multipart/form-data"
+                            id="messageForm"
+                        >
                             {% csrf_token %}
+                            <div class="alert alert-danger d-none" id="messageFormErrors" role="alert"></div>
                             {% if message_form.non_field_errors %}
                                 <div class="alert alert-danger">{{ message_form.non_field_errors }}</div>
                             {% endif %}
@@ -217,7 +223,7 @@
                             {{ message_form.reply_to }}
                             {{ message_form.reply_to.errors }}
                             <div class="d-flex flex-wrap gap-2">
-                                <button class="btn btn-primary" type="submit">Отправить</button>
+                                <button class="btn btn-primary" type="submit" id="sendMessageButton">Отправить</button>
                                 <button class="btn btn-outline-secondary" type="button" id="clearReply">
                                     Очистить ответ
                                 </button>
@@ -228,7 +234,8 @@
                 </div>
             </section>
         </div>
-        <div class="col-12 col-xl-4">
+        <div class="col-12 col-xl-4 d-flex">
+            <div class="chat-side-stack w-100">
             {% if room.room_type == "direct" %}
                 <section class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-transparent">
@@ -236,7 +243,7 @@
                     </div>
                     <div class="card-body">
                         {% if room_attachments %}
-                            <ul class="list-unstyled mb-0 chat-room-attachments">
+                            <ul class="list-unstyled mb-0 chat-room-attachments chat-room-attachments-scroll">
                                 {% for attachment in room_attachments %}
                                     <li class="chat-room-attachment">
                                         <div class="d-flex flex-column">
@@ -355,6 +362,7 @@
                     </div>
                 </div>
             </section>
+            </div>
         </div>
     </div>
 </div>
@@ -367,6 +375,9 @@
         const attachmentsInput = document.querySelector('input[name="attachments"]');
         const attachmentPreview = document.getElementById('attachmentPreview');
         const attachmentList = document.getElementById('attachmentList');
+        const messageForm = document.getElementById('messageForm');
+        const messageFormErrors = document.getElementById('messageFormErrors');
+        const sendMessageButton = document.getElementById('sendMessageButton');
         const attachmentUrls = [];
         const pollUrl = "{% url 'chat:room_updates' room.id %}";
         let lastMessageAt = "{{ last_message_at|date:'c' }}";
@@ -397,6 +408,41 @@
             const value = String(text || '');
             if (value.length <= maxLength) return value;
             return `${value.slice(0, Math.max(0, maxLength - 1))}…`;
+        };
+
+        const showFormErrors = (errors) => {
+            if (!messageFormErrors) return;
+            if (!errors || !Object.keys(errors).length) {
+                messageFormErrors.classList.add('d-none');
+                messageFormErrors.innerHTML = '';
+                return;
+            }
+            const list = document.createElement('ul');
+            list.className = 'mb-0';
+            Object.entries(errors).forEach(([field, messages]) => {
+                messages.forEach((message) => {
+                    const item = document.createElement('li');
+                    const label = field === '__all__' ? 'Сообщение' : field;
+                    item.textContent = `${label}: ${message}`;
+                    list.appendChild(item);
+                });
+            });
+            messageFormErrors.innerHTML = '';
+            messageFormErrors.appendChild(list);
+            messageFormErrors.classList.remove('d-none');
+        };
+
+        const resetMessageForm = () => {
+            if (messageForm) {
+                messageForm.reset();
+            }
+            if (replyInput) {
+                replyInput.value = '';
+            }
+            if (replyPreview) {
+                replyPreview.hidden = true;
+            }
+            clearAttachmentBlocks();
         };
 
         const renderReplyBlock = (replyTo) => {
@@ -720,6 +766,60 @@
         if (attachmentsInput) {
             attachmentsInput.addEventListener('change', updateAttachmentBlocks);
             window.addEventListener('beforeunload', clearAttachmentBlocks);
+        }
+        if (messageForm) {
+            messageForm.addEventListener('submit', (event) => {
+                if (!window.fetch) return;
+                event.preventDefault();
+                const formData = new FormData(messageForm);
+                const shouldStickToBottom = chatScrollContainer
+                    ? chatScrollContainer.scrollTop + chatScrollContainer.clientHeight >= chatScrollContainer.scrollHeight - 16
+                    : false;
+                showFormErrors(null);
+                if (sendMessageButton) {
+                    sendMessageButton.disabled = true;
+                }
+                fetch(messageForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            return response.json().then((data) => {
+                                throw data;
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        if (!data || !data.message) return;
+                        appendMessages([{
+                            ...data.message,
+                            sender_id: data.message.sender_id || null,
+                        }]);
+                        if (chatScrollContainer && shouldStickToBottom) {
+                            chatScrollContainer.scrollTop = chatScrollContainer.scrollHeight;
+                        }
+                        if (data.last_message_at) {
+                            lastMessageAt = data.last_message_at;
+                        }
+                        resetMessageForm();
+                    })
+                    .catch((error) => {
+                        if (error && error.errors) {
+                            showFormErrors(error.errors);
+                        }
+                    })
+                    .finally(() => {
+                        if (sendMessageButton) {
+                            sendMessageButton.disabled = false;
+                        }
+                    });
+            });
         }
         if (pollUrl) {
             setInterval(() => {
