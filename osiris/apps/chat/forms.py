@@ -18,6 +18,25 @@ class MultiFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
 
+class MultipleFileField(forms.FileField):
+    def to_python(self, data):
+        if not data:
+            return []
+        if isinstance(data, (list, tuple)):
+            return [super().to_python(item) for item in data]
+        return [super().to_python(data)]
+
+    def validate(self, data):
+        if self.required and not data:
+            raise ValidationError(self.error_messages["required"], code="required")
+
+    def run_validators(self, data):
+        if not data:
+            return
+        for item in data:
+            super().run_validators(item)
+
+
 @dataclass(frozen=True)
 class AttachmentPolicy:
     max_size: int
@@ -46,7 +65,7 @@ class ChatMessageForm(forms.Form):
         required=False,
     )
     reply_to = forms.IntegerField(widget=forms.HiddenInput, required=False)
-    attachments = forms.FileField(
+    attachments = MultipleFileField(
         label="Вложения",
         required=False,
         widget=MultiFileInput(attrs={"multiple": True, "class": "form-control"}),
@@ -65,7 +84,7 @@ class ChatMessageForm(forms.Form):
         return cleaned
 
     def clean_attachments(self):
-        files = self.files.getlist("attachments")
+        files = self.cleaned_data.get("attachments") or []
         for file in files:
             self._validate_file(file)
         return files
