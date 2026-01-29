@@ -111,7 +111,7 @@
                                                                 </figure>
                                                             {% else %}
                                                                 <a
-                                                                    class="badge text-bg-dark text-decoration-none"
+                                                                    class="badge text-bg-dark text-decoration-none chat-attachment-link"
                                                                     href="{% url 'chat:attachment' attachment.id %}"
                                                                 >
                                                                     {{ attachment.original_name|default:attachment.file.name }}
@@ -239,8 +239,8 @@
                             <ul class="list-unstyled mb-0 chat-room-attachments">
                                 {% for attachment in room_attachments %}
                                     <li class="chat-room-attachment">
-                                        <div class="d-flex flex-column">
-                                            <span class="fw-semibold">
+                                        <div class="d-flex flex-column chat-room-attachment__meta">
+                                            <span class="fw-semibold chat-room-attachment__name">
                                                 {{ attachment.original_name|default:attachment.file.name }}
                                             </span>
                                             <span class="text-secondary small">
