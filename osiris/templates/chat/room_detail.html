@@ -44,20 +44,29 @@
                 </div>
                 <div class="card-body">
                     {% if messages %}
-                        <div class="d-flex flex-column gap-3">
+                        <div class="chat-message-list d-flex flex-column gap-3">
                             {% for message in messages %}
-                                <article class="border rounded-3 p-3" id="message-{{ message.id }}">
-                                    <div class="d-flex flex-wrap justify-content-between">
-                                        <strong>{{ message.sender|default:"Система" }}</strong>
-                                        <span class="text-secondary small">
-                                            {{ message.sent_at|date:"d.m.Y H:i" }}
-                                            {% if message.edited_at %}
-                                                · ред.
-                                            {% endif %}
-                                        </span>
-                                    </div>
+                                {% with is_mine=message.sender_id == request.user.id %}
+                                    <article
+                                        class="chat-message {% if is_mine %}chat-message--mine{% else %}chat-message--other{% endif %}"
+                                        id="message-{{ message.id }}"
+                                    >
+                                        <div class="chat-message__header d-flex flex-wrap justify-content-between">
+                                            <strong class="chat-message__author">
+                                                {{ message.sender|default:"Система" }}
+                                                {% if is_mine %}
+                                                    <span class="badge text-bg-primary-subtle text-primary ms-1">Вы</span>
+                                                {% endif %}
+                                            </strong>
+                                            <span class="text-secondary small">
+                                                {{ message.sent_at|date:"d.m.Y H:i" }}
+                                                {% if message.edited_at %}
+                                                    · ред.
+                                                {% endif %}
+                                            </span>
+                                        </div>
                                     {% if message.reply_to %}
-                                        <div class="alert alert-secondary py-2 small mt-2">
+                                        <div class="alert alert-secondary py-2 small mt-2 mb-0">
                                             Ответ на: {{ message.reply_to.sender|default:"Система" }} —
                                             {% if message.reply_to.is_deleted %}
                                                 сообщение удалено
@@ -144,7 +153,8 @@
                                             {% endif %}
                                         {% endif %}
                                     </div>
-                                </article>
+                                    </article>
+                                {% endwith %}
                             {% endfor %}
                         </div>
                     {% else %}
