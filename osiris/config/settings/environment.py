@@ -21,8 +21,9 @@ IBM_DB_HOME = PROJECT_DIR / "data" / "clidriver"
 RCA_APP_DIR = PROJECT_DIR / "apps" / "rca"
 RCA_DUCKDB_PATH = RCA_APP_DIR / "data" / "rca.duckdb"
 
-# где лежат XML выгрузки (оставь D:\Projects\oim_arch как дефолт)
-RCA_XML_DIR = Path(os.environ.get("RCA_XML_DIR", r"D:\Projects\oim_arch"))
+# где лежат XML выгрузки (дефолт — каталог внутри проекта, но можно переопределить через env)
+# Ожидаем структуру PROJECT_DIR/data/rca_xml с выгрузками по умолчанию.
+RCA_XML_DIR = Path(os.environ.get("RCA_XML_DIR", str(PROJECT_DIR / "data" / "rca_xml")))
 
 
 if USE_IBM and IBM_DB_HOME.exists() and IBM_DB_HOME.is_dir():
@@ -34,7 +35,9 @@ if USE_IBM and IBM_DB_HOME.exists() and IBM_DB_HOME.is_dir():
         # Добавляем lib и bin в PATH
         clidriver_lib_path = IBM_DB_HOME / "lib"
         clidriver_bin_path = IBM_DB_HOME / "bin"
-        os.add_dll_directory(clidriver_bin_path)
+        # Windows-специфичный хук для поиска DLL; на других платформах он недоступен.
+        if os.name == "nt" or hasattr(os, "add_dll_directory"):
+            os.add_dll_directory(clidriver_bin_path)
         paths_to_add = [clidriver_lib_path, clidriver_bin_path]
 
         current_path = os.environ.get("PATH", "")
