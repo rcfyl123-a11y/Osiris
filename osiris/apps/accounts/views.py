@@ -18,4 +18,4 @@ def signup(request: HttpRequest) -> HttpResponse:
     else:
         form = SignupForm()
 
-    return render(request, "registration/signup.html", {"form": form})
+    return render(request, "accounts/registration/signup.html", {"form": form})
