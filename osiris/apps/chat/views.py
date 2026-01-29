@@ -478,7 +478,9 @@ def room_updates(request: HttpRequest, room_id: int) -> HttpResponse:
     after_dt = parse_datetime(after) if after else None
     if after_dt and timezone.is_naive(after_dt):
         after_dt = timezone.make_aware(after_dt, timezone.get_current_timezone())
-    messages_qs = room.messages.select_related("sender").prefetch_related("attachments")
+    messages_qs = room.messages.select_related("sender", "reply_to", "reply_to__sender").prefetch_related(
+        "attachments"
+    )
     if after_dt:
         messages_qs = messages_qs.filter(sent_at__gt=after_dt)
     messages_qs = messages_qs.order_by("sent_at")[:50]
@@ -492,17 +494,34 @@ def room_updates(request: HttpRequest, room_id: int) -> HttpResponse:
                     "id": attachment.id,
                     "name": attachment.original_name or attachment.file.name,
                     "is_image": attachment.is_image,
+                    "url": reverse("chat:attachment", args=[attachment.id]),
+                    "preview_url": reverse("chat:attachment_preview", args=[attachment.id])
+                    if attachment.is_image
+                    else None,
                 }
                 for attachment in message.attachments.all()
             ]
+        reply_to = None
+        if message.reply_to_id:
+            reply_sender = message.reply_to.sender if message.reply_to else None
+            reply_to = {
+                "id": message.reply_to_id,
+                "sender": str(reply_sender) if reply_sender else "Система",
+                "body": message.reply_to.body if message.reply_to else "",
+                "is_deleted": message.reply_to.is_deleted if message.reply_to else True,
+            }
         payload.append(
             {
                 "id": message.id,
                 "body": message.body,
                 "sent_at": message.sent_at.isoformat(),
                 "sender": str(message.sender) if message.sender else "Система",
+                "sender_id": message.sender_id,
+                "edited_at": message.edited_at.isoformat() if message.edited_at else None,
                 "is_deleted": message.is_deleted,
+                "reply_to": reply_to,
                 "attachments": attachments,
             }
         )
-    return JsonResponse({"messages": payload})
+    last_message_at = payload[-1]["sent_at"] if payload else None
+    return JsonResponse({"messages": payload, "last_message_at": last_message_at})

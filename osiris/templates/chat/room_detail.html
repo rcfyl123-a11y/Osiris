@@ -44,7 +44,7 @@
                 </div>
                 <div class="card-body">
                     {% if messages %}
-                        <div class="chat-message-list d-flex flex-column gap-3">
+                        <div class="chat-message-list d-flex flex-column gap-3" id="chatMessageList">
                             {% for message in messages %}
                                     <article
                                         class="chat-message {% if message.sender_id == request.user.id %}chat-message--mine{% else %}chat-message--other{% endif %}"
@@ -168,7 +168,7 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <div class="text-center py-4">
+                        <div class="text-center py-4" id="emptyChatState">
                             <p class="mb-1">В комнате пока нет сообщений.</p>
                             <p class="text-secondary mb-0">Как только они появятся, список обновится.</p>
                         </div>
@@ -312,9 +312,239 @@
         const attachmentList = document.getElementById('attachmentList');
         const attachmentUrls = [];
         const pollUrl = "{% url 'chat:room_updates' room.id %}";
-        const lastMessageAt = "{{ last_message_at|date:'c' }}";
+        let lastMessageAt = "{{ last_message_at|date:'c' }}";
         const scrollStorageKey = "chat-room-scroll-{{ room.id }}";
         const shouldRestoreScroll = !window.location.hash;
+        const currentUserId = {{ request.user.id|default:"null" }};
+        const isRoomAdmin = {{ is_room_admin|yesno:"true,false" }};
+        const messageList = document.getElementById('chatMessageList');
+        const emptyChatState = document.getElementById('emptyChatState');
+        const attachmentPlaceholderUrl = "{% url 'chat:attachment' 0 %}";
+        const attachmentPreviewPlaceholderUrl = "{% url 'chat:attachment_preview' 0 %}";
+
+        const buildUrlFromTemplate = (template, id) => template.replace(/0\/?$/, `${id}/`);
+
+        const appendLineBreaks = (container, text) => {
+            const parts = String(text || '').split('\n');
+            parts.forEach((part, index) => {
+                if (index > 0) {
+                    container.appendChild(document.createElement('br'));
+                }
+                container.appendChild(document.createTextNode(part));
+            });
+        };
+
+        const renderReplyBlock = (replyTo) => {
+            if (!replyTo) return null;
+            const replyBlock = document.createElement('div');
+            replyBlock.className = 'alert alert-secondary py-2 small mt-2 mb-0';
+            if (replyTo.is_deleted) {
+                replyBlock.textContent = `Ответ на: ${replyTo.sender} — сообщение удалено`;
+            } else {
+                replyBlock.textContent = `Ответ на: ${replyTo.sender} — ${replyTo.body || ''}`;
+            }
+            return replyBlock;
+        };
+
+        const renderAttachments = (attachments) => {
+            if (!attachments || !attachments.length) return null;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'mt-2';
+
+            const title = document.createElement('div');
+            title.className = 'text-secondary small mb-2';
+            title.innerHTML = '<i class="fa-solid fa-paperclip" aria-hidden="true"></i> Вложения:';
+            wrapper.appendChild(title);
+
+            const grid = document.createElement('div');
+            grid.className = 'chat-attachment-preview-grid';
+
+            attachments.forEach((attachment) => {
+                if (attachment.is_image) {
+                    const figure = document.createElement('figure');
+                    figure.className = 'chat-attachment-preview';
+
+                    const link = document.createElement('a');
+                    link.className = 'd-inline-block';
+                    link.href = attachment.url || buildUrlFromTemplate(attachmentPlaceholderUrl, attachment.id);
+
+                    const img = document.createElement('img');
+                    img.src = attachment.preview_url || buildUrlFromTemplate(attachmentPreviewPlaceholderUrl, attachment.id);
+                    img.alt = attachment.name || '';
+
+                    link.appendChild(img);
+                    figure.appendChild(link);
+
+                    const caption = document.createElement('figcaption');
+                    caption.className = 'small text-secondary mt-1';
+                    caption.textContent = attachment.name || '';
+
+                    figure.appendChild(caption);
+                    grid.appendChild(figure);
+                } else {
+                    const link = document.createElement('a');
+                    link.className = 'badge text-bg-dark text-decoration-none';
+                    link.href = attachment.url || buildUrlFromTemplate(attachmentPlaceholderUrl, attachment.id);
+                    link.textContent = attachment.name || '';
+                    grid.appendChild(link);
+                }
+            });
+
+            wrapper.appendChild(grid);
+            return wrapper;
+        };
+
+        const createReplyButton = (message) => {
+            const button = document.createElement('button');
+            button.className = 'btn btn-sm btn-outline-secondary';
+            button.type = 'button';
+            button.textContent = 'Ответить';
+            button.addEventListener('click', () => {
+                if (!replyInput || !replyPreview) return;
+                replyInput.value = message.id;
+                const previewText = message.is_deleted ? 'сообщение удалено' : (message.body || '').slice(0, 80);
+                replyPreview.textContent = `Ответ на сообщение #${message.id}: ${previewText}`;
+                replyPreview.hidden = false;
+                replyPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+            return button;
+        };
+
+        const renderMessage = (message) => {
+            const article = document.createElement('article');
+            const isMine = currentUserId && message.sender_id === currentUserId;
+            article.className = `chat-message ${isMine ? 'chat-message--mine' : 'chat-message--other'}`;
+            article.id = `message-${message.id}`;
+
+            const header = document.createElement('div');
+            header.className = 'chat-message__header d-flex flex-wrap justify-content-between';
+
+            const author = document.createElement('strong');
+            author.className = 'chat-message__author';
+            author.textContent = message.sender || 'Система';
+            if (isMine) {
+                const badge = document.createElement('span');
+                badge.className = 'badge text-bg-primary-subtle text-primary ms-1';
+                badge.textContent = 'Вы';
+                author.appendChild(badge);
+            }
+
+            const time = document.createElement('span');
+            time.className = 'text-secondary small';
+            const sentAt = new Date(message.sent_at);
+            const formattedTime = sentAt.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            time.textContent = formattedTime;
+            if (message.edited_at) {
+                time.textContent += ' · ред.';
+            }
+
+            header.appendChild(author);
+            header.appendChild(time);
+            article.appendChild(header);
+
+            const replyBlock = renderReplyBlock(message.reply_to);
+            if (replyBlock) {
+                article.appendChild(replyBlock);
+            }
+
+            if (message.is_deleted) {
+                const deletedText = document.createElement('p');
+                deletedText.className = 'mb-2 text-secondary';
+                const em = document.createElement('em');
+                em.textContent = 'Сообщение удалено.';
+                deletedText.appendChild(em);
+                article.appendChild(deletedText);
+            } else {
+                const body = document.createElement('p');
+                body.className = 'mb-2';
+                appendLineBreaks(body, message.body || '(Сообщение без текста)');
+                article.appendChild(body);
+
+                const attachmentsBlock = renderAttachments(message.attachments);
+                if (attachmentsBlock) {
+                    article.appendChild(attachmentsBlock);
+                }
+            }
+
+            const actions = document.createElement('div');
+            actions.className = 'd-flex flex-wrap gap-2 mt-3';
+            actions.appendChild(createReplyButton(message));
+
+            if (!message.is_deleted && (isMine || isRoomAdmin)) {
+                const editDetails = document.createElement('details');
+                const summary = document.createElement('summary');
+                summary.className = 'btn btn-sm btn-outline-primary';
+                summary.textContent = 'Редактировать';
+                editDetails.appendChild(summary);
+
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = "{% url 'chat:edit_message' room.id 0 %}".replace(/0\/?$/, `${message.id}/`);
+                form.className = 'mt-2';
+
+                const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                if (csrfInput) {
+                    const csrfClone = csrfInput.cloneNode();
+                    csrfClone.value = csrfInput.value;
+                    form.appendChild(csrfClone);
+                }
+
+                const textarea = document.createElement('textarea');
+                textarea.className = 'form-control mb-2';
+                textarea.name = 'body';
+                textarea.rows = 3;
+                textarea.textContent = message.body || '';
+                form.appendChild(textarea);
+
+                const submitButton = document.createElement('button');
+                submitButton.className = 'btn btn-sm btn-primary';
+                submitButton.type = 'submit';
+                submitButton.textContent = 'Сохранить';
+                form.appendChild(submitButton);
+                editDetails.appendChild(form);
+                actions.appendChild(editDetails);
+
+                const deleteForm = document.createElement('form');
+                deleteForm.method = 'post';
+                deleteForm.action = "{% url 'chat:delete_message' room.id 0 %}".replace(/0\/?$/, `${message.id}/`);
+                deleteForm.onsubmit = () => confirm('Удалить сообщение?');
+
+                if (csrfInput) {
+                    const csrfClone = csrfInput.cloneNode();
+                    csrfClone.value = csrfInput.value;
+                    deleteForm.appendChild(csrfClone);
+                }
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'btn btn-sm btn-outline-danger';
+                deleteButton.type = 'submit';
+                deleteButton.textContent = 'Удалить';
+                deleteForm.appendChild(deleteButton);
+                actions.appendChild(deleteForm);
+            }
+
+            article.appendChild(actions);
+            return article;
+        };
+
+        const appendMessages = (messages) => {
+            if (!messages || !messages.length) return;
+            let list = messageList;
+            if (!list) {
+                list = document.createElement('div');
+                list.className = 'chat-message-list d-flex flex-column gap-3';
+                list.id = 'chatMessageList';
+                const container = emptyChatState ? emptyChatState.parentElement : document.querySelector('.card-body');
+                if (container) {
+                    if (emptyChatState) emptyChatState.remove();
+                    container.prepend(list);
+                }
+            }
+            messages.forEach((message) => {
+                if (document.getElementById(`message-${message.id}`)) return;
+                list.appendChild(renderMessage(message));
+            });
+        };
 
         const saveScrollPosition = () => {
             sessionStorage.setItem(scrollStorageKey, String(window.scrollY));
@@ -401,14 +631,25 @@
             attachmentsInput.addEventListener('change', updateAttachmentBlocks);
             window.addEventListener('beforeunload', clearAttachmentBlocks);
         }
-        if (pollUrl && lastMessageAt) {
+        if (pollUrl) {
             setInterval(() => {
-                fetch(`${pollUrl}?after=${encodeURIComponent(lastMessageAt)}`)
+                const query = lastMessageAt ? `?after=${encodeURIComponent(lastMessageAt)}` : '';
+                fetch(`${pollUrl}${query}`)
                     .then((response) => response.json())
                     .then((data) => {
-                        if (!data.messages || !data.messages.length) return;
-                        saveScrollPosition();
-                        window.location.reload();
+                        if (!data.messages || !data.messages.length) {
+                            if (data.last_message_at) {
+                                lastMessageAt = data.last_message_at;
+                            }
+                            return;
+                        }
+                        appendMessages(data.messages.map((message) => ({
+                            ...message,
+                            sender_id: message.sender_id || null,
+                        })));
+                        if (data.last_message_at) {
+                            lastMessageAt = data.last_message_at;
+                        }
                     })
                     .catch(() => {});
             }, {{ polling_interval|default:8 }} * 1000);
