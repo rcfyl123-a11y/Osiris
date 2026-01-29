@@ -42,27 +42,81 @@
                     {% if messages %}
                         <div class="d-flex flex-column gap-3">
                             {% for message in messages %}
-                                <article class="border rounded-3 p-3">
+                                <article class="border rounded-3 p-3" id="message-{{ message.id }}">
                                     <div class="d-flex flex-wrap justify-content-between">
                                         <strong>{{ message.sender|default:"Система" }}</strong>
-                                        <span class="text-secondary small">{{ message.sent_at|date:"d.m.Y H:i" }}</span>
+                                        <span class="text-secondary small">
+                                            {{ message.sent_at|date:"d.m.Y H:i" }}
+                                            {% if message.edited_at %}
+                                                · ред.
+                                            {% endif %}
+                                        </span>
                                     </div>
                                     {% if message.reply_to %}
                                         <div class="alert alert-secondary py-2 small mt-2">
                                             Ответ на: {{ message.reply_to.sender|default:"Система" }} —
-                                            {{ message.reply_to.body|truncatechars:80 }}
+                                            {% if message.reply_to.is_deleted %}
+                                                сообщение удалено
+                                            {% else %}
+                                                {{ message.reply_to.body|truncatechars:80 }}
+                                            {% endif %}
                                         </div>
                                     {% endif %}
-                                    <p class="mb-2">{{ message.body|default:"(Сообщение без текста)" }}</p>
-                                    {% if message.attachments.all %}
-                                        <div class="text-secondary small">
-                                            <i class="fa-solid fa-paperclip" aria-hidden="true"></i>
-                                            Вложения:
-                                            {% for attachment in message.attachments.all %}
-                                                <span class="badge text-bg-dark">{{ attachment.original_name|default:attachment.file.name }}</span>
-                                            {% endfor %}
-                                        </div>
+                                    {% if message.is_deleted %}
+                                        <p class="mb-2 text-secondary"><em>Сообщение удалено.</em></p>
+                                    {% else %}
+                                        <p class="mb-2">{{ message.body|default:"(Сообщение без текста)"|linebreaksbr }}</p>
+                                        {% if message.attachments.all %}
+                                            <div class="text-secondary small">
+                                                <i class="fa-solid fa-paperclip" aria-hidden="true"></i>
+                                                Вложения:
+                                                {% for attachment in message.attachments.all %}
+                                                    <a
+                                                        class="badge text-bg-dark text-decoration-none"
+                                                        href="{% url 'chat:attachment' attachment.id %}"
+                                                    >
+                                                        {{ attachment.original_name|default:attachment.file.name }}
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
                                     {% endif %}
+                                    <div class="d-flex flex-wrap gap-2 mt-3">
+                                        <button
+                                            class="btn btn-sm btn-outline-secondary"
+                                            type="button"
+                                            data-reply-id="{{ message.id }}"
+                                            data-reply-text="{% if message.is_deleted %}сообщение удалено{% else %}{{ message.body|truncatechars:80|escapejs }}{% endif %}"
+                                        >
+                                            Ответить
+                                        </button>
+                                        {% if not message.is_deleted %}
+                                            {% if message.sender_id == request.user.id or is_room_admin %}
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-primary">Редактировать</summary>
+                                                    <form
+                                                        method="post"
+                                                        action="{% url 'chat:edit_message' room.id message.id %}"
+                                                        class="mt-2"
+                                                    >
+                                                        {% csrf_token %}
+                                                        <textarea class="form-control mb-2" name="body" rows="3">{{ message.body }}</textarea>
+                                                        <button class="btn btn-sm btn-primary" type="submit">Сохранить</button>
+                                                    </form>
+                                                </details>
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'chat:delete_message' room.id message.id %}"
+                                                    onsubmit="return confirm('Удалить сообщение?');"
+                                                >
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                        Удалить
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
                                 </article>
                             {% endfor %}
                         </div>
@@ -71,6 +125,46 @@
                             <p class="mb-1">В комнате пока нет сообщений.</p>
                             <p class="text-secondary mb-0">Как только они появятся, список обновится.</p>
                         </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-transparent">
+                    <span class="fw-semibold">Новое сообщение</span>
+                </div>
+                <div class="card-body">
+                    {% if room.is_archived and not is_room_admin %}
+                        <div class="alert alert-secondary">
+                            Комната в архиве. Отправка сообщений доступна только администраторам.
+                        </div>
+                    {% else %}
+                        <form method="post" action="{% url 'chat:send_message' room.id %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {% if message_form.non_field_errors %}
+                                <div class="alert alert-danger">{{ message_form.non_field_errors }}</div>
+                            {% endif %}
+                            <div class="mb-3">
+                                {{ message_form.body.label_tag }}
+                                {{ message_form.body }}
+                                {{ message_form.body.errors }}
+                            </div>
+                            <div class="mb-3">
+                                {{ message_form.attachments.label_tag }}
+                                {{ message_form.attachments }}
+                                {{ message_form.attachments.errors }}
+                                <div class="form-text">{{ attachment_help }}</div>
+                            </div>
+                            {{ message_form.reply_to }}
+                            {{ message_form.reply_to.errors }}
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-primary" type="submit">Отправить</button>
+                                <button class="btn btn-outline-secondary" type="button" id="clearReply">
+                                    Очистить ответ
+                                </button>
+                            </div>
+                            <p class="text-secondary small mt-2" id="replyPreview" hidden></p>
+                        </form>
                     {% endif %}
                 </div>
             </section>
@@ -86,7 +180,18 @@
                             {% for membership in memberships %}
                                 <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                     <span>{{ membership.user }}</span>
-                                    <span class="badge text-bg-secondary">{{ membership.get_role_display }}</span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge text-bg-secondary">{{ membership.get_role_display }}</span>
+                                        {% if can_manage_members and membership.user_id != request.user.id %}
+                                            <form
+                                                method="post"
+                                                action="{% url 'chat:remove_member' room.id membership.user_id %}"
+                                            >
+                                                {% csrf_token %}
+                                                <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -95,6 +200,25 @@
                     {% endif %}
                 </div>
             </section>
+
+            {% if can_manage_members and room.room_type == "group" %}
+                <section class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <span class="fw-semibold">Добавить участника</span>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'chat:add_member' room.id %}">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                {{ member_form.user_id.label_tag }}
+                                {{ member_form.user_id }}
+                                {{ member_form.user_id.errors }}
+                            </div>
+                            <button class="btn btn-outline-primary w-100" type="submit">Добавить</button>
+                        </form>
+                    </div>
+                </section>
+            {% endif %}
 
             <section class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent">
@@ -105,13 +229,66 @@
                         <dt class="col-5 text-secondary">Тип</dt>
                         <dd class="col-7 mb-2">{{ room.get_room_type_display }}</dd>
                         <dt class="col-5 text-secondary">Сообщений</dt>
-                        <dd class="col-7 mb-2">{{ room.messages.count }}</dd>
+                        <dd class="col-7 mb-2">{{ message_count }}</dd>
                         <dt class="col-5 text-secondary">В архиве</dt>
                         <dd class="col-7 mb-0">{% if room.is_archived %}Да{% else %}Нет{% endif %}</dd>
                     </dl>
+                    <div class="d-grid gap-2 mt-3">
+                        <form method="post" action="{% url 'chat:leave_room' room.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-secondary" type="submit">Покинуть комнату</button>
+                        </form>
+                        {% if can_manage_members %}
+                            <form method="post" action="{% url 'chat:toggle_archive' room.id %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-warning" type="submit">
+                                    {% if room.is_archived %}Разархивировать{% else %}Архивировать{% endif %}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
             </section>
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        const replyInput = document.querySelector('input[name="reply_to"]');
+        const replyPreview = document.getElementById('replyPreview');
+        const clearButton = document.getElementById('clearReply');
+        const pollUrl = "{% url 'chat:room_updates' room.id %}";
+        const lastMessageAt = "{{ last_message_at|date:'c' }}";
+        if (replyInput && replyPreview) {
+            document.querySelectorAll('[data-reply-id]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const replyId = button.getAttribute('data-reply-id');
+                    const replyText = button.getAttribute('data-reply-text');
+                    replyInput.value = replyId;
+                    replyPreview.textContent = `Ответ на сообщение #${replyId}: ${replyText}`;
+                    replyPreview.hidden = false;
+                    replyPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
+            });
+            if (clearButton) {
+                clearButton.addEventListener('click', () => {
+                    replyInput.value = '';
+                    replyPreview.hidden = true;
+                });
+            }
+        }
+        if (pollUrl && lastMessageAt) {
+            setInterval(() => {
+                fetch(`${pollUrl}?after=${encodeURIComponent(lastMessageAt)}`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (!data.messages || !data.messages.length) return;
+                        window.location.reload();
+                    })
+                    .catch(() => {});
+            }, {{ polling_interval|default:8 }} * 1000);
+        }
+    })();
+</script>
 {% endblock %}
