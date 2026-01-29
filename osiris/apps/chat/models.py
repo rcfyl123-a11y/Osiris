@@ -126,6 +126,7 @@ class ChatMembership(models.Model):
         ]
         indexes = [
             models.Index(fields=["room", "user"], name="chat_membership_room_user_idx"),
+            models.Index(fields=["user", "room"], name="chat_membership_user_room_idx"),
         ]
 
     room = models.ForeignKey(
@@ -182,6 +183,10 @@ class ChatMessage(models.Model):
         ordering = ["sent_at"]
         indexes = [
             models.Index(fields=["room", "sent_at"], name="chat_message_room_sent_at_idx"),
+            models.Index(
+                fields=["room", "is_deleted", "sent_at"],
+                name="chat_msg_room_del_sent_idx",
+            ),
         ]
 
     room = models.ForeignKey(

@@ -28,3 +28,6 @@ from .password_validators import *
 
 # Настройки Debug Toolbar
 from .debug_toolbar import *
+
+# Настройки чата
+from .chat import *

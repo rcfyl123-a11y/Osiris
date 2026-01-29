@@ -53,6 +53,29 @@
 
     <section class="card border-0 shadow-sm">
         <div class="card-body">
+            <h2 class="h6">Начать личный чат</h2>
+            <form class="row gy-2 gx-3 align-items-end" method="post" action="{% url 'chat:create_direct_chat' %}">
+                {% csrf_token %}
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="directUserId">ID пользователя</label>
+                    <input
+                        class="form-control"
+                        type="number"
+                        id="directUserId"
+                        name="user_id"
+                        min="1"
+                        required
+                    >
+                </div>
+                <div class="col-12 col-md-4">
+                    <button class="btn btn-outline-primary w-100" type="submit">Создать чат</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="card border-0 shadow-sm">
+        <div class="card-body">
             {% if rooms %}
                 <div class="list-group list-group-flush">
                     {% for room in rooms %}
@@ -69,11 +92,21 @@
                                             {{ room.name|default:"Групповой чат" }}
                                         {% endif %}
                                     </span>
+                                    {% if room.unread_count %}
+                                        <span class="badge text-bg-primary">{{ room.unread_count }}</span>
+                                    {% endif %}
                                     {% if room.is_archived %}
                                         <span class="badge text-bg-secondary">Архив</span>
                                     {% endif %}
                                 </div>
-                                {% if room.description %}
+                                {% if room.last_message_body %}
+                                    <p class="text-secondary mb-1">
+                                        {% if room.last_message_sender %}
+                                            <strong>{{ room.last_message_sender }}:</strong>
+                                        {% endif %}
+                                        {{ room.last_message_body|truncatechars:120 }}
+                                    </p>
+                                {% elif room.description %}
                                     <p class="text-secondary mb-1">{{ room.description }}</p>
                                 {% endif %}
                                 <div class="d-flex flex-wrap gap-3 text-secondary small">
