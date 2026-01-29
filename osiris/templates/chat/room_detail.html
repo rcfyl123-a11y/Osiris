@@ -301,6 +301,23 @@
         const attachmentUrls = [];
         const pollUrl = "{% url 'chat:room_updates' room.id %}";
         const lastMessageAt = "{{ last_message_at|date:'c' }}";
+        const scrollStorageKey = "chat-room-scroll-{{ room.id }}";
+        const shouldRestoreScroll = !window.location.hash;
+
+        const saveScrollPosition = () => {
+            sessionStorage.setItem(scrollStorageKey, String(window.scrollY));
+        };
+
+        if (shouldRestoreScroll) {
+            const savedScroll = sessionStorage.getItem(scrollStorageKey);
+            if (savedScroll) {
+                window.scrollTo(0, parseInt(savedScroll, 10));
+            }
+        }
+
+        window.addEventListener('scroll', () => {
+            saveScrollPosition();
+        });
 
         const clearAttachmentBlocks = () => {
             attachmentUrls.forEach((url) => URL.revokeObjectURL(url));
@@ -378,6 +395,7 @@
                     .then((response) => response.json())
                     .then((data) => {
                         if (!data.messages || !data.messages.length) return;
+                        saveScrollPosition();
                         window.location.reload();
                     })
                     .catch(() => {});
