@@ -44,3 +44,4 @@ Thumbs.db
 *.swo
 *~
 ```
+/osiris/apps/rca/data/rca.duckdb
