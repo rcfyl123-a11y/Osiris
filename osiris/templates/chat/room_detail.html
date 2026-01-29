@@ -42,9 +42,10 @@
                         <span class="text-secondary small">{{ messages|length }} из 50</span>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body chat-card-body">
                     {% if messages %}
-                        <div class="chat-message-list d-flex flex-column gap-3" id="chatMessageList">
+                        <div class="chat-scroll" id="chatScrollContainer">
+                            <div class="chat-message-list d-flex flex-column gap-3" id="chatMessageList">
                             {% for message in messages %}
                                     <article
                                         class="chat-message {% if message.sender_id == request.user.id %}chat-message--mine{% else %}chat-message--other{% endif %}"
@@ -65,12 +66,18 @@
                                             </span>
                                         </div>
                                     {% if message.reply_to %}
-                                        <div class="alert alert-secondary py-2 small mt-2 mb-0">
-                                            Ответ на: {{ message.reply_to.sender|default:"Система" }} —
+                                        <div class="alert alert-secondary py-2 small mt-2 mb-0 chat-reply">
+                                            Ответ на:
+                                            <a class="chat-reply__link" href="#message-{{ message.reply_to.id }}">
+                                                {{ message.reply_to.sender|default:"Система" }}
+                                            </a>
+                                            —
                                             {% if message.reply_to.is_deleted %}
                                                 сообщение удалено
                                             {% else %}
-                                                {{ message.reply_to.body|truncatechars:80 }}
+                                                <span class="chat-reply__text">
+                                                    {{ message.reply_to.body|truncatechars:60 }}
+                                                </span>
                                             {% endif %}
                                         </div>
                                     {% endif %}
@@ -121,7 +128,7 @@
                                             class="btn btn-sm btn-outline-secondary"
                                             type="button"
                                             data-reply-id="{{ message.id }}"
-                                            data-reply-text="{% if message.is_deleted %}сообщение удалено{% else %}{{ message.body|truncatechars:80|escapejs }}{% endif %}"
+                                            data-reply-text="{% if message.is_deleted %}сообщение удалено{% else %}{{ message.body|truncatechars:60|escapejs }}{% endif %}"
                                         >
                                             Ответить
                                         </button>
@@ -166,11 +173,14 @@
                                     </div>
                                     </article>
                             {% endfor %}
+                            </div>
                         </div>
                     {% else %}
-                        <div class="text-center py-4" id="emptyChatState">
-                            <p class="mb-1">В комнате пока нет сообщений.</p>
-                            <p class="text-secondary mb-0">Как только они появятся, список обновится.</p>
+                        <div class="chat-scroll" id="chatScrollContainer">
+                            <div class="text-center py-4" id="emptyChatState">
+                                <p class="mb-1">В комнате пока нет сообщений.</p>
+                                <p class="text-secondary mb-0">Как только они появятся, список обновится.</p>
+                            </div>
                         </div>
                     {% endif %}
                 </div>
@@ -319,8 +329,10 @@
         const isRoomAdmin = {{ is_room_admin|yesno:"true,false" }};
         const messageList = document.getElementById('chatMessageList');
         const emptyChatState = document.getElementById('emptyChatState');
+        const chatScrollContainer = document.getElementById('chatScrollContainer');
         const attachmentPlaceholderUrl = "{% url 'chat:attachment' 0 %}";
         const attachmentPreviewPlaceholderUrl = "{% url 'chat:attachment_preview' 0 %}";
+        const maxReplyPreviewLength = 60;
 
         const buildUrlFromTemplate = (template, id) => template.replace(/0\/?$/, `${id}/`);
 
@@ -334,14 +346,37 @@
             });
         };
 
+        const truncateText = (text, maxLength = maxReplyPreviewLength) => {
+            const value = String(text || '');
+            if (value.length <= maxLength) return value;
+            return `${value.slice(0, Math.max(0, maxLength - 1))}…`;
+        };
+
         const renderReplyBlock = (replyTo) => {
             if (!replyTo) return null;
             const replyBlock = document.createElement('div');
-            replyBlock.className = 'alert alert-secondary py-2 small mt-2 mb-0';
+            replyBlock.className = 'alert alert-secondary py-2 small mt-2 mb-0 chat-reply';
             if (replyTo.is_deleted) {
                 replyBlock.textContent = `Ответ на: ${replyTo.sender} — сообщение удалено`;
             } else {
-                replyBlock.textContent = `Ответ на: ${replyTo.sender} — ${replyTo.body || ''}`;
+                const label = document.createElement('span');
+                label.textContent = 'Ответ на: ';
+                replyBlock.appendChild(label);
+
+                const link = document.createElement('a');
+                link.className = 'chat-reply__link';
+                link.href = `#message-${replyTo.id}`;
+                link.textContent = replyTo.sender || 'Система';
+                replyBlock.appendChild(link);
+
+                const divider = document.createElement('span');
+                divider.textContent = ' — ';
+                replyBlock.appendChild(divider);
+
+                const text = document.createElement('span');
+                text.className = 'chat-reply__text';
+                text.textContent = truncateText(replyTo.body || '');
+                replyBlock.appendChild(text);
             }
             return replyBlock;
         };
@@ -402,7 +437,7 @@
             button.addEventListener('click', () => {
                 if (!replyInput || !replyPreview) return;
                 replyInput.value = message.id;
-                const previewText = message.is_deleted ? 'сообщение удалено' : (message.body || '').slice(0, 80);
+                const previewText = message.is_deleted ? 'сообщение удалено' : truncateText(message.body || '');
                 replyPreview.textContent = `Ответ на сообщение #${message.id}: ${previewText}`;
                 replyPreview.hidden = false;
                 replyPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -534,7 +569,7 @@
                 list = document.createElement('div');
                 list.className = 'chat-message-list d-flex flex-column gap-3';
                 list.id = 'chatMessageList';
-                const container = emptyChatState ? emptyChatState.parentElement : document.querySelector('.card-body');
+                const container = chatScrollContainer || (emptyChatState ? emptyChatState.parentElement : document.querySelector('.chat-card-body'));
                 if (container) {
                     if (emptyChatState) emptyChatState.remove();
                     container.prepend(list);
@@ -547,19 +582,27 @@
         };
 
         const saveScrollPosition = () => {
-            sessionStorage.setItem(scrollStorageKey, String(window.scrollY));
+            if (!chatScrollContainer) return;
+            sessionStorage.setItem(scrollStorageKey, String(chatScrollContainer.scrollTop));
+        };
+
+        const restoreScrollPosition = () => {
+            if (!chatScrollContainer) return;
+            const savedScroll = sessionStorage.getItem(scrollStorageKey);
+            if (savedScroll !== null) {
+                chatScrollContainer.scrollTop = parseInt(savedScroll, 10);
+            } else {
+                chatScrollContainer.scrollTop = chatScrollContainer.scrollHeight;
+            }
         };
 
         if (shouldRestoreScroll) {
-            const savedScroll = sessionStorage.getItem(scrollStorageKey);
-            if (savedScroll) {
-                window.scrollTo(0, parseInt(savedScroll, 10));
-            }
+            restoreScrollPosition();
         }
 
-        window.addEventListener('scroll', () => {
-            saveScrollPosition();
-        });
+        if (chatScrollContainer) {
+            chatScrollContainer.addEventListener('scroll', saveScrollPosition);
+        }
 
         const clearAttachmentBlocks = () => {
             attachmentUrls.forEach((url) => URL.revokeObjectURL(url));
@@ -615,7 +658,7 @@
                     const replyId = button.getAttribute('data-reply-id');
                     const replyText = button.getAttribute('data-reply-text');
                     replyInput.value = replyId;
-                    replyPreview.textContent = `Ответ на сообщение #${replyId}: ${replyText}`;
+                    replyPreview.textContent = `Ответ на сообщение #${replyId}: ${truncateText(replyText || '')}`;
                     replyPreview.hidden = false;
                     replyPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 });
@@ -643,10 +686,16 @@
                             }
                             return;
                         }
+                        const shouldStickToBottom = chatScrollContainer
+                            ? chatScrollContainer.scrollTop + chatScrollContainer.clientHeight >= chatScrollContainer.scrollHeight - 16
+                            : false;
                         appendMessages(data.messages.map((message) => ({
                             ...message,
                             sender_id: message.sender_id || null,
                         })));
+                        if (chatScrollContainer && shouldStickToBottom) {
+                            chatScrollContainer.scrollTop = chatScrollContainer.scrollHeight;
+                        }
                         if (data.last_message_at) {
                             lastMessageAt = data.last_message_at;
                         }

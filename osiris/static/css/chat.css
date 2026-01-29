@@ -38,6 +38,17 @@
     gap: 1rem;
 }
 
+.chat-card-body {
+    padding-top: 0;
+}
+
+.chat-scroll {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-top: 1rem;
+    padding-right: 0.25rem;
+}
+
 .chat-message {
     max-width: 86%;
     border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.1));
@@ -70,4 +81,26 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.chat-reply {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.chat-reply__link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dashed currentColor;
+}
+
+.chat-reply__link:hover,
+.chat-reply__link:focus {
+    text-decoration: none;
+}
+
+.chat-reply__text {
+    max-width: 100%;
 }
