@@ -46,15 +46,14 @@
                     {% if messages %}
                         <div class="chat-message-list d-flex flex-column gap-3">
                             {% for message in messages %}
-                                {% with is_mine=message.sender_id == request.user.id %}
                                     <article
-                                        class="chat-message {% if is_mine %}chat-message--mine{% else %}chat-message--other{% endif %}"
+                                        class="chat-message {% if message.sender_id == request.user.id %}chat-message--mine{% else %}chat-message--other{% endif %}"
                                         id="message-{{ message.id }}"
                                     >
                                         <div class="chat-message__header d-flex flex-wrap justify-content-between">
                                             <strong class="chat-message__author">
                                                 {{ message.sender|default:"Система" }}
-                                                {% if is_mine %}
+                                                {% if message.sender_id == request.user.id %}
                                                     <span class="badge text-bg-primary-subtle text-primary ms-1">Вы</span>
                                                 {% endif %}
                                             </strong>
@@ -154,7 +153,6 @@
                                         {% endif %}
                                     </div>
                                     </article>
-                                {% endwith %}
                             {% endfor %}
                         </div>
                     {% else %}
