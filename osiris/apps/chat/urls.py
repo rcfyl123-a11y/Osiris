@@ -29,6 +29,7 @@ urlpatterns = [
     path("rooms/<int:room_id>/leave/", views.leave_room, name="leave_room"),
     path("rooms/<int:room_id>/archive/", views.toggle_archive, name="toggle_archive"),
     path("rooms/<int:room_id>/updates/", views.room_updates, name="room_updates"),
+    path("rooms/<int:room_id>/history/", views.room_history, name="room_history"),
     path("direct/", views.create_direct_chat, name="create_direct_chat"),
     path("attachments/<int:attachment_id>/", views.attachment_download, name="attachment"),
     path(

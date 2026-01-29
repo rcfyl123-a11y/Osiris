@@ -39,17 +39,27 @@
                 <div class="card-header bg-transparent">
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="fw-semibold">Последние сообщения</span>
-                        <span class="text-secondary small">{{ messages|length }} из 50</span>
+                        <span class="text-secondary small">Показано {{ messages|length }} из {{ message_count }}</span>
                     </div>
                 </div>
                 <div class="card-body chat-card-body">
                     {% if messages %}
                         <div class="chat-scroll flex-grow-1" id="chatScrollContainer">
+                            <div class="chat-history-control text-center mb-3" id="chatHistoryControl">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" id="loadHistoryButton">
+                                    Загрузить историю
+                                </button>
+                                <div class="small text-secondary mt-2 d-none" id="historyStatus">
+                                    История полностью загружена.
+                                </div>
+                            </div>
                             <div class="chat-message-list d-flex flex-column gap-3" id="chatMessageList">
                             {% for message in messages %}
                                     <article
                                         class="chat-message {% if message.sender_id == request.user.id %}chat-message--mine{% else %}chat-message--other{% endif %}"
                                         id="message-{{ message.id }}"
+                                        data-message-id="{{ message.id }}"
+                                        data-sent-at="{{ message.sent_at|date:'c' }}"
                                     >
                                         <div class="chat-message__header d-flex flex-wrap justify-content-between">
                                             <strong class="chat-message__author">
@@ -380,14 +390,19 @@
         const sendMessageButton = document.getElementById('sendMessageButton');
         const attachmentUrls = [];
         const pollUrl = "{% url 'chat:room_updates' room.id %}";
+        const historyUrl = "{% url 'chat:room_history' room.id %}";
         let lastMessageAt = "{{ last_message_at|date:'c' }}";
         const scrollStorageKey = "chat-room-scroll-{{ room.id }}";
         const shouldRestoreScroll = !window.location.hash;
         const currentUserId = {{ request.user.id|default:"null" }};
         const isRoomAdmin = {{ is_room_admin|yesno:"true,false" }};
-        const messageList = document.getElementById('chatMessageList');
+        let hasMoreHistory = {{ has_more_history|yesno:"true,false" }};
+        let isLoadingHistory = false;
+        let messageList = document.getElementById('chatMessageList');
         const emptyChatState = document.getElementById('emptyChatState');
         const chatScrollContainer = document.getElementById('chatScrollContainer');
+        let historyButton = document.getElementById('loadHistoryButton');
+        let historyStatus = document.getElementById('historyStatus');
         const attachmentPlaceholderUrl = "{% url 'chat:attachment' 0 %}";
         const attachmentPreviewPlaceholderUrl = "{% url 'chat:attachment_preview' 0 %}";
         const maxReplyPreviewLength = 60;
@@ -652,7 +667,36 @@
             }
 
             article.appendChild(actions);
+            article.dataset.messageId = message.id;
+            if (message.sent_at) {
+                article.dataset.sentAt = message.sent_at;
+            }
             return article;
+        };
+
+        const ensureHistoryControl = (container) => {
+            if (!container || document.getElementById('chatHistoryControl')) return;
+            const control = document.createElement('div');
+            control.className = 'chat-history-control text-center mb-3';
+            control.id = 'chatHistoryControl';
+
+            const button = document.createElement('button');
+            button.className = 'btn btn-sm btn-outline-secondary';
+            button.type = 'button';
+            button.id = 'loadHistoryButton';
+            button.textContent = 'Загрузить историю';
+            control.appendChild(button);
+
+            const status = document.createElement('div');
+            status.className = 'small text-secondary mt-2 d-none';
+            status.id = 'historyStatus';
+            status.textContent = 'История полностью загружена.';
+            control.appendChild(status);
+
+            container.prepend(control);
+            historyButton = button;
+            historyStatus = status;
+            button.addEventListener('click', loadHistoryBatch);
         };
 
         const appendMessages = (messages) => {
@@ -665,13 +709,25 @@
                 const container = chatScrollContainer || (emptyChatState ? emptyChatState.parentElement : document.querySelector('.chat-card-body'));
                 if (container) {
                     if (emptyChatState) emptyChatState.remove();
-                    container.prepend(list);
+                    ensureHistoryControl(container);
+                    container.appendChild(list);
                 }
+                messageList = list;
             }
             messages.forEach((message) => {
                 if (document.getElementById(`message-${message.id}`)) return;
                 list.appendChild(renderMessage(message));
             });
+        };
+
+        const prependMessages = (messages) => {
+            if (!messages || !messages.length || !messageList) return;
+            const fragment = document.createDocumentFragment();
+            messages.forEach((message) => {
+                if (document.getElementById(`message-${message.id}`)) return;
+                fragment.appendChild(renderMessage(message));
+            });
+            messageList.prepend(fragment);
         };
 
         const saveScrollPosition = () => {
@@ -693,8 +749,96 @@
             restoreScrollPosition();
         }
 
+        const updateHistoryControls = () => {
+            if (!historyButton) {
+                historyButton = document.getElementById('loadHistoryButton');
+            }
+            if (!historyStatus) {
+                historyStatus = document.getElementById('historyStatus');
+            }
+            if (!historyButton || !historyStatus) return;
+            if (hasMoreHistory) {
+                historyButton.hidden = false;
+                historyButton.disabled = false;
+                historyStatus.classList.add('d-none');
+            } else {
+                historyButton.hidden = true;
+                historyStatus.classList.remove('d-none');
+            }
+        };
+
+        const getOldestMessageMeta = () => {
+            if (!messageList) return null;
+            const firstMessage = messageList.querySelector('.chat-message');
+            if (!firstMessage) return null;
+            return {
+                sentAt: firstMessage.dataset.sentAt,
+                id: firstMessage.dataset.messageId,
+            };
+        };
+
+        const loadHistoryBatch = () => {
+            if (!historyUrl || isLoadingHistory || !hasMoreHistory) return;
+            const meta = getOldestMessageMeta();
+            if (!meta || !meta.sentAt) {
+                hasMoreHistory = false;
+                updateHistoryControls();
+                return;
+            }
+            const params = new URLSearchParams({
+                before: meta.sentAt,
+            });
+            if (meta.id) {
+                params.set('before_id', meta.id);
+            }
+            isLoadingHistory = true;
+            if (historyButton) {
+                historyButton.disabled = true;
+                historyButton.textContent = 'Загрузка…';
+            }
+            const previousScrollTop = chatScrollContainer ? chatScrollContainer.scrollTop : 0;
+            const previousScrollHeight = chatScrollContainer ? chatScrollContainer.scrollHeight : 0;
+            fetch(`${historyUrl}?${params.toString()}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const messages = (data && data.messages) || [];
+                    if (!messages.length) {
+                        hasMoreHistory = false;
+                        return;
+                    }
+                    prependMessages(messages.map((message) => ({
+                        ...message,
+                        sender_id: message.sender_id || null,
+                    })));
+                    if (chatScrollContainer) {
+                        const newScrollHeight = chatScrollContainer.scrollHeight;
+                        chatScrollContainer.scrollTop = previousScrollTop + (newScrollHeight - previousScrollHeight);
+                    }
+                    hasMoreHistory = Boolean(data.has_more);
+                })
+                .catch(() => {})
+                .finally(() => {
+                    isLoadingHistory = false;
+                    if (historyButton) {
+                        historyButton.textContent = 'Загрузить историю';
+                    }
+                    updateHistoryControls();
+                });
+        };
+
+        updateHistoryControls();
+
+        if (historyButton) {
+            historyButton.addEventListener('click', loadHistoryBatch);
+        }
+
         if (chatScrollContainer) {
-            chatScrollContainer.addEventListener('scroll', saveScrollPosition);
+            chatScrollContainer.addEventListener('scroll', () => {
+                saveScrollPosition();
+                if (chatScrollContainer.scrollTop <= 24) {
+                    loadHistoryBatch();
+                }
+            });
         }
 
         const clearAttachmentBlocks = () => {
