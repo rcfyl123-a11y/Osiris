@@ -9,13 +9,13 @@
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}Osiris{% endblock %}</title>
 
-    <link href="{% static 'static/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'static/css/base.css' %}" rel="stylesheet">
-    <link href="{% static 'static/css/toast.css' %}" rel="stylesheet">
-    <link href="{% static 'static/css/theme/light.css' %}" rel="stylesheet">
-    <link href="{% static 'static/css/theme/dark.css' %}" rel="stylesheet">
-    <link href="{% static 'static/css/theme/contrast.css' %}" rel="stylesheet">
-    <link href="{% static 'static/font-awesome/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/base.css' %}" rel="stylesheet">
+    <link href="{% static 'css/toast.css' %}" rel="stylesheet">
+    <link href="{% static 'css/theme/light.css' %}" rel="stylesheet">
+    <link href="{% static 'css/theme/dark.css' %}" rel="stylesheet">
+    <link href="{% static 'css/theme/contrast.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/all.min.css' %}" rel="stylesheet">
     {% block css %}{% endblock %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
 </head>
@@ -31,8 +31,8 @@
 
 {% include "components/footer.html" %}
 
-<script src="{% static 'static/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'static/js/app.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
 {% block js %}{% endblock %}
 
 {% if debug %}
