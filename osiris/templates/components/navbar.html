@@ -46,6 +46,25 @@
                         </a>
                     </li>
 
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if p|slice:':6' == '/chat/' %}active{% endif %}"
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Чаты
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'chat:room_list' %}">
+                                    <i class="fas fa-comments me-2"></i>Все комнаты
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'chat:create_direct_chat' %}">
+                                    <i class="fas fa-user-friends me-2"></i>Личный чат
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                 </ul>
 
                 <div class="d-flex align-items-center">
