@@ -33,3 +33,41 @@
     flex-wrap: wrap;
     gap: 0.75rem;
 }
+
+.chat-message-list {
+    gap: 1rem;
+}
+
+.chat-message {
+    max-width: 86%;
+    border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.1));
+    border-radius: 1rem;
+    padding: 1rem;
+    background: var(--bs-body-bg, #ffffff);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.chat-message--mine {
+    align-self: flex-end;
+    background: rgba(13, 110, 253, 0.08);
+    border-color: rgba(13, 110, 253, 0.35);
+}
+
+.chat-message--other {
+    align-self: flex-start;
+    background: rgba(13, 110, 253, 0.03);
+}
+
+.chat-message__header {
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.chat-message__author {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
