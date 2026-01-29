@@ -511,7 +511,7 @@
                     grid.appendChild(figure);
                 } else {
                     const link = document.createElement('a');
-                    link.className = 'badge text-bg-dark text-decoration-none';
+                    link.className = 'badge text-bg-dark text-decoration-none chat-attachment-link';
                     link.href = attachment.url || buildUrlFromTemplate(attachmentPlaceholderUrl, attachment.id);
                     link.textContent = attachment.name || '';
                     grid.appendChild(link);
