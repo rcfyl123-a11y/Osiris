@@ -86,6 +86,54 @@ def _build_content_disposition(disposition: str, filename: str) -> str:
     return f"{disposition}; filename=\"{ascii_fallback}\"; filename*=UTF-8''{quoted_name}"
 
 
+def _wants_json(request: HttpRequest) -> bool:
+    return request.headers.get("x-requested-with") == "XMLHttpRequest" or "application/json" in request.headers.get(
+        "accept", ""
+    )
+
+
+def _form_errors(form) -> dict[str, list[str]]:
+    errors: dict[str, list[str]] = {}
+    for field, details in form.errors.get_json_data().items():
+        errors[field] = [item["message"] for item in details]
+    return errors
+
+
+def _serialize_message(message: ChatMessage) -> dict:
+    attachments = []
+    if not message.is_deleted:
+        attachments = [
+            {
+                "id": attachment.id,
+                "name": attachment.original_name or attachment.file.name,
+                "is_image": attachment.is_image,
+                "url": reverse("chat:attachment", args=[attachment.id]),
+                "preview_url": reverse("chat:attachment_preview", args=[attachment.id]) if attachment.is_image else None,
+            }
+            for attachment in message.attachments.all()
+        ]
+    reply_to = None
+    if message.reply_to_id:
+        reply_sender = message.reply_to.sender if message.reply_to else None
+        reply_to = {
+            "id": message.reply_to_id,
+            "sender": str(reply_sender) if reply_sender else "Система",
+            "body": message.reply_to.body if message.reply_to else "",
+            "is_deleted": message.reply_to.is_deleted if message.reply_to else True,
+        }
+    return {
+        "id": message.id,
+        "body": message.body,
+        "sent_at": message.sent_at.isoformat(),
+        "sender": str(message.sender) if message.sender else "Система",
+        "sender_id": message.sender_id,
+        "edited_at": message.edited_at.isoformat() if message.edited_at else None,
+        "is_deleted": message.is_deleted,
+        "reply_to": reply_to,
+        "attachments": attachments,
+    }
+
+
 def _get_room_attachments(room: ChatRoom) -> tuple[list[ChatAttachment], int]:
     if room.room_type != ChatRoom.RoomType.DIRECT:
         return [], 0
@@ -241,6 +289,8 @@ def send_message(request: HttpRequest, room_id: int) -> HttpResponse:
 
     form = ChatMessageForm(request.POST, request.FILES)
     if not form.is_valid():
+        if _wants_json(request):
+            return JsonResponse({"errors": _form_errors(form)}, status=400)
         return _render_with_form(form)
 
     reply_to_id = form.cleaned_data.get("reply_to")
@@ -251,6 +301,8 @@ def send_message(request: HttpRequest, room_id: int) -> HttpResponse:
             form.add_error("reply_to", "Сообщение для ответа не найдено.")
 
     if form.errors:
+        if _wants_json(request):
+            return JsonResponse({"errors": _form_errors(form)}, status=400)
         return _render_with_form(form)
 
     message = ChatMessage.objects.create(
@@ -274,6 +326,14 @@ def send_message(request: HttpRequest, room_id: int) -> HttpResponse:
             is_image=bool(content_type and content_type.startswith("image/")),
         )
 
+    if _wants_json(request):
+        message = (
+            ChatMessage.objects.select_related("sender", "reply_to", "reply_to__sender")
+            .prefetch_related("attachments")
+            .get(pk=message.pk)
+        )
+        payload = _serialize_message(message)
+        return JsonResponse({"message": payload, "last_message_at": payload["sent_at"]})
     return redirect(f"{reverse('chat:room_detail', args=[room_id])}#message-{message.id}")
 
 
@@ -507,43 +567,6 @@ def room_updates(request: HttpRequest, room_id: int) -> HttpResponse:
         messages_qs = messages_qs.filter(sent_at__gt=after_dt)
     messages_qs = messages_qs.order_by("sent_at")[:50]
 
-    payload = []
-    for message in messages_qs:
-        attachments = []
-        if not message.is_deleted:
-            attachments = [
-                {
-                    "id": attachment.id,
-                    "name": attachment.original_name or attachment.file.name,
-                    "is_image": attachment.is_image,
-                    "url": reverse("chat:attachment", args=[attachment.id]),
-                    "preview_url": reverse("chat:attachment_preview", args=[attachment.id])
-                    if attachment.is_image
-                    else None,
-                }
-                for attachment in message.attachments.all()
-            ]
-        reply_to = None
-        if message.reply_to_id:
-            reply_sender = message.reply_to.sender if message.reply_to else None
-            reply_to = {
-                "id": message.reply_to_id,
-                "sender": str(reply_sender) if reply_sender else "Система",
-                "body": message.reply_to.body if message.reply_to else "",
-                "is_deleted": message.reply_to.is_deleted if message.reply_to else True,
-            }
-        payload.append(
-            {
-                "id": message.id,
-                "body": message.body,
-                "sent_at": message.sent_at.isoformat(),
-                "sender": str(message.sender) if message.sender else "Система",
-                "sender_id": message.sender_id,
-                "edited_at": message.edited_at.isoformat() if message.edited_at else None,
-                "is_deleted": message.is_deleted,
-                "reply_to": reply_to,
-                "attachments": attachments,
-            }
-        )
+    payload = [_serialize_message(message) for message in messages_qs]
     last_message_at = payload[-1]["sent_at"] if payload else None
     return JsonResponse({"messages": payload, "last_message_at": last_message_at})
