@@ -65,7 +65,19 @@ Osiris — Django-проект с модульной архитектурой и
 ```
 
 ## Переменные окружения
-- `SECRET_KEY`: секретный ключ Django (по умолчанию — заглушка).
-- `DEBUG`: режим отладки ('True' или 'False', по умолчанию 'False').
-- `ALLOWED_HOSTS`: список разрешённых хостов через запятую
-  (по умолчанию `localhost,127.0.0.1`).
+### Базовые
+- `DJANGO_SECRET_KEY` (или `SECRET_KEY`): секретный ключ Django (по умолчанию — заглушка).
+- `DJANGO_DEBUG` (или `DEBUG`): режим отладки (`true/false`, по умолчанию зависит от команды `runserver`).
+- `DJANGO_ALLOWED_HOSTS` (или `ALLOWED_HOSTS`): список разрешённых хостов через запятую
+  (по умолчанию `localhost,127.0.0.1,0.0.0.0`).
+- `DJANGO_ENABLE_DEBUG_TOOLBAR`: включить Debug Toolbar (`1/true/yes`, по умолчанию `0`).
+
+### База данных
+- `DATABASE_URL`: строка подключения (поддерживаются `postgresql://` и `sqlite:///`).
+- `DB_ENGINE`: явный выбор движка (`postgresql` или `sqlite`), если нет `DATABASE_URL`.
+- `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`: параметры для `DB_ENGINE=postgresql`.
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`:
+  используются как резерв для PostgreSQL, если не задан `DATABASE_URL` и `DB_ENGINE`.
+
+### Логи
+- `DJANGO_LOG_LEVEL` (или `LOG_LEVEL`): уровень логирования (по умолчанию `DEBUG` в dev и `INFO` в остальных случаях).
