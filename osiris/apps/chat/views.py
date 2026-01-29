@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 import mimetypes
 from pathlib import Path
+from urllib.parse import quote
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -17,7 +18,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from django.utils.text import slugify
+from django.utils.text import get_valid_filename
 
 from .forms import ChatMemberAddForm, ChatMessageEditForm, ChatMessageForm, DirectChatForm
 from .models import ChatAttachment, ChatMembership, ChatMessage, ChatRoom
@@ -68,6 +69,19 @@ def _build_last_message_subquery():
         .order_by("-sent_at")
         .values("sent_at", "body", "sender__username")[:1]
     )
+
+
+def _build_content_disposition(disposition: str, filename: str) -> str:
+    original_path = Path(filename or "")
+    stem = get_valid_filename(original_path.stem) or "attachment"
+    if original_path.suffix:
+        safe_suffix = get_valid_filename(original_path.suffix).lstrip(".")
+        safe_name = f"{stem}.{safe_suffix}" if safe_suffix else stem
+    else:
+        safe_name = stem
+    ascii_fallback = safe_name.encode("ascii", "ignore").decode("ascii") or "attachment"
+    quoted_name = quote(safe_name)
+    return f"{disposition}; filename=\"{ascii_fallback}\"; filename*=UTF-8''{quoted_name}"
 
 
 @login_required
@@ -291,10 +305,8 @@ def attachment_download(request: HttpRequest, attachment_id: int) -> HttpRespons
     file_handle = attachment.file.open("rb")
     response = FileResponse(file_handle, content_type=attachment.content_type or None)
     original = attachment.original_name or attachment.file.name
-    stem = slugify(Path(original).stem) or Path(original).stem
-    safe_name = f"{stem}{Path(original).suffix}"
     response["Content-Length"] = attachment.size
-    response["Content-Disposition"] = f'attachment; filename="{safe_name}"'
+    response["Content-Disposition"] = _build_content_disposition("attachment", original)
     return response
 
 
@@ -314,10 +326,8 @@ def attachment_preview(request: HttpRequest, attachment_id: int) -> HttpResponse
     file_handle = attachment.file.open("rb")
     response = FileResponse(file_handle, content_type=attachment.content_type or None)
     original = attachment.original_name or attachment.file.name
-    stem = slugify(Path(original).stem) or Path(original).stem
-    safe_name = f"{stem}{Path(original).suffix}"
     response["Content-Length"] = attachment.size
-    response["Content-Disposition"] = f'inline; filename="{safe_name}"'
+    response["Content-Disposition"] = _build_content_disposition("inline", original)
     return response
 
 
