@@ -206,10 +206,11 @@ def room_detail(request: HttpRequest, room_id: int) -> HttpResponse:
         "user__first_name",
         "user__username",
     )
+    message_limit = settings.CHAT_MESSAGES_PAGE_SIZE
     recent_messages_qs = (
         room.messages.select_related("sender", "reply_to")
         .prefetch_related("attachments")
-        .order_by("-sent_at")[:50]
+        .order_by("-sent_at", "-id")[:message_limit]
     )
     recent_messages = list(recent_messages_qs)[::-1]
     message_count = room.messages.count()
@@ -230,6 +231,8 @@ def room_detail(request: HttpRequest, room_id: int) -> HttpResponse:
         "memberships": memberships,
         "messages": recent_messages,
         "message_count": message_count,
+        "message_limit": message_limit,
+        "has_more_history": message_count > len(recent_messages),
         "message_form": message_form,
         "member_form": member_form,
         "can_manage_members": can_manage_members(membership),
@@ -257,11 +260,13 @@ def send_message(request: HttpRequest, room_id: int) -> HttpResponse:
 
     def _render_with_form(form, status=400):
         memberships = room.memberships.select_related("user")
+        message_limit = settings.CHAT_MESSAGES_PAGE_SIZE
         recent_messages = (
             room.messages.select_related("sender", "reply_to")
             .prefetch_related("attachments")
-            .order_by("-sent_at")[:50]
+            .order_by("-sent_at", "-id")[:message_limit]
         )
+        message_count = room.messages.count()
         max_size_mb = settings.CHAT_ATTACHMENT_MAX_SIZE / (1024 * 1024)
         attachment_help = (
             f"Допустимые типы: {', '.join(settings.CHAT_ALLOWED_CONTENT_TYPES)}. "
@@ -274,7 +279,9 @@ def send_message(request: HttpRequest, room_id: int) -> HttpResponse:
             "messages": list(recent_messages)[::-1],
             "message_form": form,
             "member_form": ChatMemberAddForm(),
-            "message_count": room.messages.count(),
+            "message_count": message_count,
+            "message_limit": message_limit,
+            "has_more_history": message_count > len(recent_messages),
             "can_manage_members": can_manage_members(membership),
             "can_post": (not room.is_archived) or is_room_admin(membership),
             "is_room_admin": is_room_admin(membership),
@@ -553,6 +560,40 @@ def toggle_archive(request: HttpRequest, room_id: int) -> HttpResponse:
 
 
 @login_required
+def room_history(request: HttpRequest, room_id: int) -> HttpResponse:
+    room = get_object_or_404(ChatRoom, pk=room_id)
+    require_room_member(room, request.user)
+    before = request.GET.get("before")
+    before_id = request.GET.get("before_id")
+    before_id_value = None
+    if before_id:
+        try:
+            before_id_value = int(before_id)
+        except (TypeError, ValueError):
+            before_id_value = None
+    before_dt = parse_datetime(before) if before else None
+    if before_dt and timezone.is_naive(before_dt):
+        before_dt = timezone.make_aware(before_dt, timezone.get_current_timezone())
+
+    messages_qs = room.messages.select_related("sender", "reply_to", "reply_to__sender").prefetch_related(
+        "attachments"
+    )
+    if before_dt:
+        if before_id_value is not None:
+            messages_qs = messages_qs.filter(
+                Q(sent_at__lt=before_dt) | Q(sent_at=before_dt, id__lt=before_id_value)
+            )
+        else:
+            messages_qs = messages_qs.filter(sent_at__lt=before_dt)
+    message_limit = settings.CHAT_MESSAGES_PAGE_SIZE
+    messages = list(messages_qs.order_by("-sent_at", "-id")[: message_limit + 1])
+    has_more = len(messages) > message_limit
+    messages = messages[:message_limit]
+    payload = [_serialize_message(message) for message in reversed(messages)]
+    return JsonResponse({"messages": payload, "has_more": has_more})
+
+
+@login_required
 def room_updates(request: HttpRequest, room_id: int) -> HttpResponse:
     room = get_object_or_404(ChatRoom, pk=room_id)
     require_room_member(room, request.user)
@@ -565,7 +606,7 @@ def room_updates(request: HttpRequest, room_id: int) -> HttpResponse:
     )
     if after_dt:
         messages_qs = messages_qs.filter(sent_at__gt=after_dt)
-    messages_qs = messages_qs.order_by("sent_at")[:50]
+    messages_qs = messages_qs.order_by("sent_at", "id")[: settings.CHAT_MESSAGES_PAGE_SIZE]
 
     payload = [_serialize_message(message) for message in messages_qs]
     last_message_at = payload[-1]["sent_at"] if payload else None
