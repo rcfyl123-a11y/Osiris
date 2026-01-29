@@ -252,10 +252,43 @@ def edit_message(request: HttpRequest, room_id: int, message_id: int) -> HttpRes
     if message.is_deleted or not can_manage_message(membership, message):
         raise PermissionDenied("Нет прав для редактирования сообщения.")
 
+    def _render_with_form(form, status=400):
+        memberships = room.memberships.select_related("user")
+        recent_messages = (
+            room.messages.select_related("sender", "reply_to")
+            .prefetch_related("attachments")
+            .order_by("-sent_at")[:50]
+        )
+        max_size_mb = settings.CHAT_ATTACHMENT_MAX_SIZE / (1024 * 1024)
+        attachment_help = (
+            f"Допустимые типы: {', '.join(settings.CHAT_ALLOWED_CONTENT_TYPES)}. "
+            f"Максимум {max_size_mb:.0f} МБ."
+        )
+        context = {
+            "room": room,
+            "memberships": memberships,
+            "messages": list(recent_messages)[::-1],
+            "message_form": ChatMessageForm(),
+            "member_form": ChatMemberAddForm(),
+            "message_count": room.messages.count(),
+            "can_manage_members": can_manage_members(membership),
+            "can_post": (not room.is_archived) or is_room_admin(membership),
+            "is_room_admin": is_room_admin(membership),
+            "membership": membership,
+            "polling_interval": settings.CHAT_POLLING_INTERVAL_SECONDS,
+            "last_message_at": list(recent_messages)[-1].sent_at if recent_messages else None,
+            "attachment_help": attachment_help,
+            "edit_form": form,
+            "edit_message_id": message.id,
+        }
+        return render(request, "chat/room_detail.html", context, status=status)
+
     if request.method == "POST":
         form = ChatMessageEditForm(request.POST, instance=message)
         if form.is_valid():
             form.save()
+        else:
+            return _render_with_form(form)
     return redirect(f"{reverse('chat:room_detail', args=[room_id])}#message-{message.id}")
 
 

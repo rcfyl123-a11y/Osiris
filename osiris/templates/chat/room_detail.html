@@ -135,7 +135,19 @@
                                                         class="mt-2"
                                                     >
                                                         {% csrf_token %}
-                                                        <textarea class="form-control mb-2" name="body" rows="3">{{ message.body }}</textarea>
+                                                        {% if edit_form and edit_message_id == message.id %}
+                                                            <div class="mb-2">
+                                                                {{ edit_form.body }}
+                                                            </div>
+                                                            {{ edit_form.body.errors }}
+                                                            {% if edit_form.non_field_errors %}
+                                                                <div class="text-danger small mt-1">
+                                                                    {{ edit_form.non_field_errors }}
+                                                                </div>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <textarea class="form-control mb-2" name="body" rows="3">{{ message.body }}</textarea>
+                                                        {% endif %}
                                                         <button class="btn btn-sm btn-primary" type="submit">Сохранить</button>
                                                     </form>
                                                 </details>
