@@ -9,10 +9,12 @@ from django.contrib import admin
 from django.urls import include, path
 
 from osiris.apps.blog import views as blog_views
+from osiris.config import views as config_views
 
 urlpatterns = [
     path("", blog_views.home, name="home"),
     path("admin/", admin.site.urls),
+    path("health/", config_views.health_check, name="health"),
 ]
 
 APPS_DIR = Path(__file__).resolve().parent.parent / "apps"

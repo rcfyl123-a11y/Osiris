@@ -132,8 +132,8 @@
                     {% else %}
                         <!-- Неавторизованный пользователь -->
                         <div class="d-flex gap-2">
-                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm">Войти</a>
-                            <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">Регистрация</a>
+                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-sm">Войти</a>
+                            <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-sm">Регистрация</a>
                         </div>
                     {% endif %}
                 </div>

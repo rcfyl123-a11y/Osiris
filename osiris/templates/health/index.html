@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Health | Osiris{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="h3 mb-4">Статус системы</h1>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <p class="mb-3 text-muted">Проверка доступности сервиса Osiris.</p>
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <span class="badge bg-success">{{ health.status|upper }}</span>
+                    <span class="text-body-secondary small">{{ health.details.timestamp }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
