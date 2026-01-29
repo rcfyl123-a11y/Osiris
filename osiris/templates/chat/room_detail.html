@@ -1,6 +1,10 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ room.name|default:"Чат" }} · Osiris{% endblock %}
+{% block css %}
+    <link href="{% static 'css/chat.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-column gap-4">
@@ -66,20 +70,43 @@
                                         <p class="mb-2 text-secondary"><em>Сообщение удалено.</em></p>
                                     {% else %}
                                         <p class="mb-2">{{ message.body|default:"(Сообщение без текста)"|linebreaksbr }}</p>
-                                        {% if message.attachments.all %}
-                                            <div class="text-secondary small">
-                                                <i class="fa-solid fa-paperclip" aria-hidden="true"></i>
-                                                Вложения:
-                                                {% for attachment in message.attachments.all %}
-                                                    <a
-                                                        class="badge text-bg-dark text-decoration-none"
-                                                        href="{% url 'chat:attachment' attachment.id %}"
-                                                    >
-                                                        {{ attachment.original_name|default:attachment.file.name }}
-                                                    </a>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
+                                        {% with attachment_list=message.attachments.all %}
+                                            {% if attachment_list %}
+                                                <div class="mt-2">
+                                                    <div class="text-secondary small mb-2">
+                                                        <i class="fa-solid fa-paperclip" aria-hidden="true"></i>
+                                                        Вложения:
+                                                    </div>
+                                                    <div class="chat-attachment-preview-grid">
+                                                        {% for attachment in attachment_list %}
+                                                            {% if attachment.is_image %}
+                                                                <figure class="chat-attachment-preview">
+                                                                    <a
+                                                                        class="d-inline-block"
+                                                                        href="{% url 'chat:attachment' attachment.id %}"
+                                                                    >
+                                                                        <img
+                                                                            src="{% url 'chat:attachment_preview' attachment.id %}"
+                                                                            alt="{{ attachment.original_name|default:attachment.file.name }}"
+                                                                        >
+                                                                    </a>
+                                                                    <figcaption class="small text-secondary mt-1">
+                                                                        {{ attachment.original_name|default:attachment.file.name }}
+                                                                    </figcaption>
+                                                                </figure>
+                                                            {% else %}
+                                                                <a
+                                                                    class="badge text-bg-dark text-decoration-none"
+                                                                    href="{% url 'chat:attachment' attachment.id %}"
+                                                                >
+                                                                    {{ attachment.original_name|default:attachment.file.name }}
+                                                                </a>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
                                     {% endif %}
                                     <div class="d-flex flex-wrap gap-2 mt-3">
                                         <button
@@ -154,6 +181,8 @@
                                 {{ message_form.attachments }}
                                 {{ message_form.attachments.errors }}
                                 <div class="form-text">{{ attachment_help }}</div>
+                                <div class="chat-attachment-preview-grid mt-3" id="attachmentPreview" hidden></div>
+                                <ul class="chat-attachment-list mt-2" id="attachmentList" hidden></ul>
                             </div>
                             {{ message_form.reply_to }}
                             {{ message_form.reply_to.errors }}
@@ -258,8 +287,61 @@
         const replyInput = document.querySelector('input[name="reply_to"]');
         const replyPreview = document.getElementById('replyPreview');
         const clearButton = document.getElementById('clearReply');
+        const attachmentsInput = document.querySelector('input[name="attachments"]');
+        const attachmentPreview = document.getElementById('attachmentPreview');
+        const attachmentList = document.getElementById('attachmentList');
+        const attachmentUrls = [];
         const pollUrl = "{% url 'chat:room_updates' room.id %}";
         const lastMessageAt = "{{ last_message_at|date:'c' }}";
+
+        const clearAttachmentBlocks = () => {
+            attachmentUrls.forEach((url) => URL.revokeObjectURL(url));
+            attachmentUrls.length = 0;
+            if (attachmentPreview) {
+                attachmentPreview.innerHTML = '';
+                attachmentPreview.hidden = true;
+            }
+            if (attachmentList) {
+                attachmentList.innerHTML = '';
+                attachmentList.hidden = true;
+            }
+        };
+
+        const updateAttachmentBlocks = () => {
+            if (!attachmentsInput || !attachmentPreview || !attachmentList) return;
+            clearAttachmentBlocks();
+            const files = Array.from(attachmentsInput.files || []);
+            if (!files.length) return;
+            files.forEach((file) => {
+                if (file.type && file.type.startsWith('image/')) {
+                    const figure = document.createElement('figure');
+                    figure.className = 'chat-attachment-preview';
+
+                    const img = document.createElement('img');
+                    const url = URL.createObjectURL(file);
+                    attachmentUrls.push(url);
+                    img.src = url;
+                    img.alt = file.name;
+
+                    const caption = document.createElement('figcaption');
+                    caption.className = 'small text-secondary mt-1';
+                    caption.textContent = file.name;
+
+                    figure.appendChild(img);
+                    figure.appendChild(caption);
+                    attachmentPreview.appendChild(figure);
+                    attachmentPreview.hidden = false;
+                } else {
+                    const item = document.createElement('li');
+                    item.innerHTML = '<i class="fa-solid fa-paperclip" aria-hidden="true"></i>';
+                    const name = document.createElement('span');
+                    name.textContent = file.name;
+                    item.appendChild(name);
+                    attachmentList.appendChild(item);
+                    attachmentList.hidden = false;
+                }
+            });
+        };
         if (replyInput && replyPreview) {
             document.querySelectorAll('[data-reply-id]').forEach((button) => {
                 button.addEventListener('click', () => {
@@ -277,6 +359,10 @@
                     replyPreview.hidden = true;
                 });
             }
+        }
+        if (attachmentsInput) {
+            attachmentsInput.addEventListener('change', updateAttachmentBlocks);
+            window.addEventListener('beforeunload', clearAttachmentBlocks);
         }
         if (pollUrl && lastMessageAt) {
             setInterval(() => {

@@ -79,11 +79,13 @@ class ChatMessageForm(forms.Form):
             raise ValidationError("Запрещенный тип файла.")
 
         content_type = getattr(file, "content_type", "") or ""
-        if not content_type:
-            guessed_type, _ = mimetypes.guess_type(file.name)
-            content_type = guessed_type or ""
+        guessed_type, _ = mimetypes.guess_type(file.name)
+        if not content_type or content_type == "application/octet-stream":
+            content_type = guessed_type or content_type
 
         if self.policy.allowed_types and content_type not in self.policy.allowed_types:
+            if guessed_type and guessed_type in self.policy.allowed_types:
+                return
             raise ValidationError("Тип файла не поддерживается.")
 
 

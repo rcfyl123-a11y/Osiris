@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import mimetypes
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
@@ -228,13 +229,16 @@ def send_message(request: HttpRequest, room_id: int) -> HttpResponse:
 
     for file in form.cleaned_data.get("attachments", []):
         content_type = getattr(file, "content_type", "") or ""
+        guessed_type, _ = mimetypes.guess_type(file.name)
+        if not content_type or content_type == "application/octet-stream":
+            content_type = guessed_type or content_type
         ChatAttachment.objects.create(
             message=message,
             file=file,
             content_type=content_type,
             original_name=file.name,
             size=file.size,
-            is_image=content_type.startswith("image/"),
+            is_image=bool(content_type and content_type.startswith("image/")),
         )
 
     return redirect(f"{reverse('chat:room_detail', args=[room_id])}#message-{message.id}")
@@ -291,6 +295,29 @@ def attachment_download(request: HttpRequest, attachment_id: int) -> HttpRespons
     safe_name = f"{stem}{Path(original).suffix}"
     response["Content-Length"] = attachment.size
     response["Content-Disposition"] = f'attachment; filename="{safe_name}"'
+    return response
+
+
+@login_required
+def attachment_preview(request: HttpRequest, attachment_id: int) -> HttpResponse:
+    attachment = get_object_or_404(
+        ChatAttachment.objects.select_related("message__room"),
+        pk=attachment_id,
+    )
+    room = attachment.message.room
+    require_room_member(room, request.user)
+    if attachment.message.is_deleted:
+        raise PermissionDenied("Вложения удаленного сообщения недоступны.")
+    if not attachment.is_image:
+        return redirect("chat:attachment", attachment_id=attachment.id)
+
+    file_handle = attachment.file.open("rb")
+    response = FileResponse(file_handle, content_type=attachment.content_type or None)
+    original = attachment.original_name or attachment.file.name
+    stem = slugify(Path(original).stem) or Path(original).stem
+    safe_name = f"{stem}{Path(original).suffix}"
+    response["Content-Length"] = attachment.size
+    response["Content-Disposition"] = f'inline; filename="{safe_name}"'
     return response
 
 
