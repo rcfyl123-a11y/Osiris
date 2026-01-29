@@ -16,7 +16,8 @@ from .environment import PROJECT_DIR, DEBUG
 LOG_DIR: Path = PROJECT_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "DEBUG" if DEBUG else "INFO").upper()
+LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL") or os.getenv("LOG_LEVEL")
+LOG_LEVEL = (LOG_LEVEL or ("DEBUG" if DEBUG else "INFO")).upper()
 
 
 # === Адаптер: стандартный logging -> loguru ===

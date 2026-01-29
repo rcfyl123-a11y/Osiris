@@ -73,20 +73,26 @@ try:
 except Exception as e:
     log.error(f"Не удалось найти и загрузить .env. Путь: {__NEV}, ошибка: {e}")
 
+def _env_bool(value: str | None) -> bool:
+    if value is None:
+        return False
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 # Базовые настройки
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure-key-change-me")
-_debug_env = os.getenv("DJANGO_DEBUG")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY", "dev-insecure-key-change-me")
+
+_debug_env = os.getenv("DJANGO_DEBUG") or os.getenv("DEBUG")
 if _debug_env is None:
     DEBUG = "runserver" in sys.argv
 else:
-    DEBUG = _debug_env in {"1", "true", "True", "yes"}
-ENABLE_DEBUG_TOOLBAR = DEBUG and os.getenv("DJANGO_ENABLE_DEBUG_TOOLBAR", "0") in {
-    "1",
-    "true",
-    "True",
-    "yes",
-}
-ALLOWED_HOSTS = [h for h in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if h]
+    DEBUG = _env_bool(_debug_env)
+
+ENABLE_DEBUG_TOOLBAR = DEBUG and _env_bool(os.getenv("DJANGO_ENABLE_DEBUG_TOOLBAR", "0"))
+
+_default_allowed_hosts = "localhost,127.0.0.1,0.0.0.0"
+_allowed_hosts_env = os.getenv("DJANGO_ALLOWED_HOSTS") or os.getenv("ALLOWED_HOSTS")
+ALLOWED_HOSTS = [h.strip() for h in (_allowed_hosts_env or _default_allowed_hosts).split(",") if h.strip()]
 
 log.debug(f"DEBUG: {DEBUG}")
 
