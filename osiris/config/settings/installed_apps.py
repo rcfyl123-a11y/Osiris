@@ -1,3 +1,4 @@
+from ..discovery import discover_installed_apps
 from .environment import ENABLE_DEBUG_TOOLBAR
 
 
@@ -8,15 +9,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
-    "osiris.apps.accounts.apps.AccountsConfig",
-    "osiris.apps.blog.apps.BlogConfig",
-    "osiris.apps.chat.apps.ChatConfig",
-    "osiris.apps.rca.apps.RcaConfig",
-
-    # ibm-db2 service
-    # "apps.ibmdb.apps.IBMDBConfig",
 ]
+
+INSTALLED_APPS += discover_installed_apps()
 
 if ENABLE_DEBUG_TOOLBAR:
     INSTALLED_APPS.append("debug_toolbar")
