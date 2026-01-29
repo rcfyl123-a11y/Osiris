@@ -31,4 +31,9 @@ urlpatterns = [
     path("rooms/<int:room_id>/updates/", views.room_updates, name="room_updates"),
     path("direct/", views.create_direct_chat, name="create_direct_chat"),
     path("attachments/<int:attachment_id>/", views.attachment_download, name="attachment"),
+    path(
+        "attachments/<int:attachment_id>/preview/",
+        views.attachment_preview,
+        name="attachment_preview",
+    ),
 ]
