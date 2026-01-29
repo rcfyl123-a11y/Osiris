@@ -95,11 +95,6 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 {% if user.is_staff or user.is_superuser %}
                                     <li>
-                                        <a class="dropdown-item" href="{% url 'core:admin_dashboard' %}">
-                                            <i class="fas fa-tachometer-alt me-2"></i>Панель управления
-                                        </a>
-                                    </li>
-                                    <li>
                                         <a class="dropdown-item" href="{% url 'admin:index' %}" target="_blank">
                                             <i class="fas fa-cogs me-2"></i>Django Admin
                                         </a>
@@ -109,7 +104,7 @@
                                     </li>
                                 {% endif %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'core:logout' %}">
+                                    <a class="dropdown-item" href="{% url 'logout' %}">
                                         <i class="fas fa-sign-out-alt me-2"></i>Выйти
                                     </a>
                                 </li>
@@ -118,8 +113,8 @@
                     {% else %}
                         <!-- Неавторизованный пользователь -->
                         <div class="d-flex gap-2">
-                            <a href="{% url 'core:login' %}" class="btn btn-outline-primary btn-sm">Войти</a>
-                            <a href="{% url 'core:register' %}" class="btn btn-primary btn-sm">Регистрация</a>
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm">Войти</a>
+                            <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">Регистрация</a>
                         </div>
                     {% endif %}
                 </div>
