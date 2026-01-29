@@ -772,6 +772,18 @@
                 if (!window.fetch) return;
                 event.preventDefault();
                 const formData = new FormData(messageForm);
+                const fallbackErrors = { '__all__': ['Не удалось отправить сообщение. Попробуйте позже.'] };
+                const parseJson = async (response) => {
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json')) {
+                        throw new Error('invalid-json');
+                    }
+                    try {
+                        return await response.json();
+                    } catch (error) {
+                        throw new Error('invalid-json');
+                    }
+                };
                 const shouldStickToBottom = chatScrollContainer
                     ? chatScrollContainer.scrollTop + chatScrollContainer.clientHeight >= chatScrollContainer.scrollHeight - 16
                     : false;
@@ -787,14 +799,12 @@
                         'Accept': 'application/json',
                     },
                 })
-                    .then((response) => {
+                    .then((response) => parseJson(response).then((data) => {
                         if (!response.ok) {
-                            return response.json().then((data) => {
-                                throw data;
-                            });
+                            throw data;
                         }
-                        return response.json();
-                    })
+                        return data;
+                    }))
                     .then((data) => {
                         if (!data || !data.message) return;
                         appendMessages([{
@@ -812,7 +822,9 @@
                     .catch((error) => {
                         if (error && error.errors) {
                             showFormErrors(error.errors);
+                            return;
                         }
+                        showFormErrors(fallbackErrors);
                     })
                     .finally(() => {
                         if (sendMessageButton) {
