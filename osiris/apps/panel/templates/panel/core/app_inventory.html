@@ -25,6 +25,7 @@
                                 <th>Последнее изменение</th>
                                 <th>Отсутствует с</th>
                                 <th>Последнее обнаружение</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -52,6 +53,12 @@
                                     </td>
                                     <td class="text-muted small">
                                         {{ row.entry.last_seen_at|date:"Y-m-d H:i" }}
+                                    </td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                           href="{% url 'panel:app_inventory_history' app_id=row.entry.id %}">
+                                            История
+                                        </a>
                                     </td>
                                 </tr>
                             {% endfor %}
