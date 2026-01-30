@@ -14,7 +14,8 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 from django.views.generic import ListView, TemplateView
 
-from osiris.apps.core.models import DeniedIPAttempt, UserIPRecord
+from osiris.apps.core.app_inventory import audit_app_inventory
+from osiris.apps.core.models import AppInventory, DeniedIPAttempt, UserIPRecord
 
 from .services.audit import record_panel_view
 from .services.dashboard import build_dashboard_context
@@ -342,6 +343,45 @@ class PanelUsersView(PanelAuditMixin, PanelUsersPermissionMixin, TemplateView):
         return context
 
 
+class PanelAppInventoryView(PanelAuditMixin, PanelCorePermissionMixin, TemplateView):
+    template_name = "panel/core/app_inventory.html"
+    audit_action = "core_app_inventory"
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        changes = audit_app_inventory()
+        new_count = len([change for change in changes if change.status == "new"])
+        changed_count = len([change for change in changes if change.status == "changed"])
+        missing_count = len([change for change in changes if change.status == "missing"])
+        if new_count or changed_count or missing_count:
+            messages.warning(
+                request,
+                "Обновление завершено: новых=%d, изменённых=%d, отсутствующих=%d."
+                % (new_count, changed_count, missing_count),
+            )
+        else:
+            messages.success(request, "Инвентарь обновлён: изменений не обнаружено.")
+        return redirect("panel:app_inventory")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        inventory_rows = []
+        for entry in AppInventory.objects.order_by("app_label", "app_name"):
+            status = _resolve_inventory_status(entry)
+            inventory_rows.append(
+                {
+                    "entry": entry,
+                    "status": status,
+                }
+            )
+        context.update(
+            {
+                "page_subtitle": "Инвентаризация установленных приложений",
+                "inventory_rows": inventory_rows,
+            }
+        )
+        return context
+
+
 def panel_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
     """Показать аккуратную 404 страницу для панели."""
     if request.path.startswith("/panel/"):
@@ -389,3 +429,13 @@ def _parse_date_value(raw_value: str | None, *, is_start: bool) -> datetime | No
         return None
     bound_time = time.min if is_start else time.max
     return timezone.make_aware(datetime.combine(parsed_date, bound_time))
+
+
+def _resolve_inventory_status(entry: AppInventory) -> str:
+    if entry.missing_since:
+        return "missing"
+    if entry.last_changed_at and entry.last_seen_at:
+        delta = abs((entry.last_seen_at - entry.last_changed_at).total_seconds())
+        if delta <= 2:
+            return "changed"
+    return "ok"
