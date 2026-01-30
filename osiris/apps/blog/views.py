@@ -12,11 +12,6 @@ from .models import News
 NAVBAR_MESSAGE = "Добро пожаловать в приложение блога!"
 
 
-def home(request: HttpRequest) -> HttpResponse:
-    """Отрисовать главную страницу блога."""
-    return render(request, "blog/index.html", {"navbar_message": NAVBAR_MESSAGE})
-
-
 def index(request: HttpRequest) -> HttpResponse:
     """Показать опубликованные новости."""
     news_items = News.objects.filter(is_published=True)

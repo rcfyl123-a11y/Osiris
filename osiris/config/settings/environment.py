@@ -108,7 +108,7 @@ USE_TZ = True
 # URLs
 ROOT_URLCONF = "config.urls"
 
-LOGIN_URL = "login"
+LOGIN_URL = "core:login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
