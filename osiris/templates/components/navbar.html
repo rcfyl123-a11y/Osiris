@@ -18,21 +18,24 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if p|slice:':5' == '/rca/' %}active{% endif %}"
                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            RCA
+                            <span data-bs-toggle="tooltip" title="RCA">RCA</span>
                         </a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="{% url 'rca:org_list' %}">
+                                <a class="dropdown-item" href="{% url 'rca:org_list' %}" data-bs-toggle="tooltip"
+                                   title="Орг.структура">
                                     <i class="fas fa-sitemap me-2"></i>Орг.структура
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'rca:post_list' %}">
+                                <a class="dropdown-item" href="{% url 'rca:post_list' %}" data-bs-toggle="tooltip"
+                                   title="Должности">
                                     <i class="fas fa-id-badge me-2"></i>Должности
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'rca:employee_list' %}">
+                                <a class="dropdown-item" href="{% url 'rca:employee_list' %}" data-bs-toggle="tooltip"
+                                   title="Сотрудники">
                                     <i class="fas fa-users me-2"></i>Сотрудники
                                 </a>
                             </li>
@@ -48,7 +51,7 @@
 
                     <li class="nav-item">
                         <a class="nav-link {% if p|slice:':7' == '/polls/' %}active{% endif %}"
-                           href="/polls/">
+                           href="/polls/" data-bs-toggle="tooltip" title="Голосования">
                             Голосования
                         </a>
                     </li>
@@ -56,16 +59,18 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if p|slice:':6' == '/chat/' %}active{% endif %}"
                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Чаты
+                            <span data-bs-toggle="tooltip" title="Чаты">Чаты</span>
                         </a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="{% url 'chat:room_list' %}">
+                                <a class="dropdown-item" href="{% url 'chat:room_list' %}" data-bs-toggle="tooltip"
+                                   title="Все комнаты">
                                     <i class="fas fa-comments me-2"></i>Все комнаты
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'chat:create_direct_chat' %}">
+                                <a class="dropdown-item" href="{% url 'chat:create_direct_chat' %}"
+                                   data-bs-toggle="tooltip" title="Личный чат">
                                     <i class="fas fa-user-friends me-2"></i>Личный чат
                                 </a>
                             </li>
@@ -126,7 +131,8 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{% url 'panel:dashboard' %}">
+                                        <a class="dropdown-item" href="{% url 'panel:dashboard' %}"
+                                           data-bs-toggle="tooltip" title="Панель управления">
                                             <i class="fas fa-chart-pie me-2"></i>Панель управления
                                         </a>
                                     </li>
