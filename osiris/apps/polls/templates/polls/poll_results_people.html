@@ -27,9 +27,24 @@
             Экспорт
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'polls:poll_results_people_csv' poll.id %}">CSV</a></li>
-            <li><a class="dropdown-item" href="{% url 'polls:poll_results_people_xlsx' poll.id %}">XLSX</a></li>
-            <li><a class="dropdown-item" href="{% url 'polls:poll_results_people_xls' poll.id %}">XLS</a></li>
+            <li>
+              <a class="dropdown-item"
+                 href="{% url 'polls:poll_results_people_csv' poll.id %}?q={{ query|urlencode }}">
+                CSV
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item"
+                 href="{% url 'polls:poll_results_people_xlsx' poll.id %}?q={{ query|urlencode }}">
+                XLSX
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item"
+                 href="{% url 'polls:poll_results_people_xls' poll.id %}?q={{ query|urlencode }}">
+                XLS
+              </a>
+            </li>
           </ul>
         </div>
       </div>
