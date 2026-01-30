@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load poll_extras %}
+
+{% block title %}Ответы — {{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h3">Ответы участника</h1>
+    <div class="text-muted">
+        {{ vote.full_name|default:"Без ФИО" }} · {{ vote.voter_ip }}
+    </div>
+    <div class="text-muted small">
+        {{ vote.created_at|date:"d.m.Y H:i" }}
+        {% if vote.workplace %}
+            · {{ vote.workplace.label }}{% if vote.workplace.department %} ({{ vote.workplace.department }}){% endif %}
+        {% endif %}
+    </div>
+    <div class="mt-2">
+        <a href="{% url 'polls:poll_results_people' poll.id %}" class="btn btn-outline-secondary btn-sm">Назад</a>
+    </div>
+</div>
+
+{% for question in questions %}
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h2 class="h6 mb-1">{{ question.text }}</h2>
+            {% if question.help_text %}
+                <p class="text-muted small">{{ question.help_text }}</p>
+            {% endif %}
+            {% with answers=answers_map|get_item:question.id %}
+                {% if answers %}
+                    <ul class="list-group list-group-flush">
+                        {% for answer in answers %}
+                            <li class="list-group-item">
+                                {% if question.type == "text" %}
+                                    {{ answer.answer_text }}
+                                {% elif answer.choice %}
+                                    {{ answer.choice.text }}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-muted">Нет ответа.</div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}

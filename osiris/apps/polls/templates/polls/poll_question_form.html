@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Вопрос — {{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{% if question %}Редактировать вопрос{% else %}Новый вопрос{% endif %}</h1>
+        <p class="text-muted mb-0">Добавьте текст, тип и варианты ответа.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'polls:poll_builder' poll.id %}">К конструктору</a>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="card shadow-sm">
+    {% csrf_token %}
+    <div class="card-body">
+        <div class="mb-3">
+            {{ form.text.label_tag }}
+            {{ form.text }}
+            {% if form.text.errors %}
+                <div class="text-danger small">{{ form.text.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.help_text.label_tag }}
+            {{ form.help_text }}
+            {% if form.help_text.errors %}
+                <div class="text-danger small">{{ form.help_text.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.type.label_tag }}
+                {{ form.type }}
+                {% if form.type.errors %}
+                    <div class="text-danger small">{{ form.type.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-3">
+                {{ form.order.label_tag }}
+                {{ form.order }}
+                {% if form.order.errors %}
+                    <div class="text-danger small">{{ form.order.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-3">
+                <div class="form-check mt-4">
+                    {{ form.required }}
+                    {{ form.required.label_tag }}
+                </div>
+            </div>
+        </div>
+        <div class="row g-3 mt-1">
+            <div class="col-md-6">
+                {{ form.image.label_tag }}
+                {{ form.image }}
+                {% if form.image.errors %}
+                    <div class="text-danger small">{{ form.image.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.video_url.label_tag }}
+                {{ form.video_url }}
+                {% if form.video_url.errors %}
+                    <div class="text-danger small">{{ form.video_url.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h2 class="h6">Варианты ответа</h2>
+            <p class="text-muted small">Для текстовых вопросов варианты не нужны.</p>
+            {% if formset.non_form_errors %}
+                <div class="alert alert-warning">{{ formset.non_form_errors }}</div>
+            {% endif %}
+            {{ formset.management_form }}
+            <div class="d-grid gap-3">
+                {% for choice_form in formset %}
+                    <div class="border rounded p-3">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-7">
+                                {{ choice_form.text.label_tag }}
+                                {{ choice_form.text }}
+                                {% if choice_form.text.errors %}
+                                    <div class="text-danger small">{{ choice_form.text.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                {{ choice_form.order.label_tag }}
+                                {{ choice_form.order }}
+                                {% if choice_form.order.errors %}
+                                    <div class="text-danger small">{{ choice_form.order.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-2">
+                                {% if choice_form.instance.pk %}
+                                    <div class="form-check mt-4">
+                                        {{ choice_form.DELETE }}
+                                        {{ choice_form.DELETE.label_tag }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="card-footer bg-transparent d-flex justify-content-between">
+        <a class="btn btn-outline-secondary" href="{% url 'polls:poll_builder' poll.id %}">Назад</a>
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+    </div>
+</form>
+{% endblock %}

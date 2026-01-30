@@ -96,3 +96,28 @@ class PollCreateForm(forms.ModelForm):
         if poll.audience_all and commit:
             poll.audience_workplaces.clear()
         return poll
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ("text", "help_text", "type", "required", "order", "image", "video_url")
+        widgets = {
+            "text": forms.TextInput(attrs={"class": "form-control"}),
+            "help_text": forms.TextInput(attrs={"class": "form-control"}),
+            "type": forms.Select(attrs={"class": "form-select"}),
+            "required": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "order": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "video_url": forms.URLInput(attrs={"class": "form-control"}),
+        }
+
+
+class ChoiceForm(forms.ModelForm):
+    class Meta:
+        model = Choice
+        fields = ("text", "order")
+        widgets = {
+            "text": forms.TextInput(attrs={"class": "form-control"}),
+            "order": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
+        }
