@@ -414,14 +414,8 @@ def poll_results_xls(request: HttpRequest, poll_id: int) -> HttpResponse:
 @staff_member_required
 def poll_results_people(request: HttpRequest, poll_id: int) -> HttpResponse:
     poll = get_object_or_404(Poll, pk=poll_id)
-    votes = Vote.objects.filter(poll=poll).select_related("workplace").order_by("-created_at")
     query = request.GET.get("q", "").strip()
-    if query:
-        votes = votes.filter(
-            models.Q(full_name__icontains=query)
-            | models.Q(voter_ip__icontains=query)
-            | models.Q(workplace__label__icontains=query)
-        )
+    votes = _get_people_votes(poll, query=query, order_by="-created_at")
 
     return render(
         request,
@@ -437,11 +431,13 @@ def poll_results_people(request: HttpRequest, poll_id: int) -> HttpResponse:
 @staff_member_required
 def poll_results_people_csv(request: HttpRequest, poll_id: int) -> HttpResponse:
     poll = get_object_or_404(Poll, pk=poll_id)
+    query = request.GET.get("q", "").strip()
+    votes = _get_people_votes(poll, query=query)
     response = HttpResponse(content_type="text/csv; charset=utf-8")
     response["Content-Disposition"] = f'attachment; filename="poll_{poll_id}_people.csv"'
     response.write("\ufeff")
     writer = csv.writer(response)
-    _write_people_rows(writer, poll)
+    _write_people_rows(writer, poll, votes=votes)
     return response
 
 
@@ -451,10 +447,13 @@ def poll_results_people_xlsx(request: HttpRequest, poll_id: int) -> HttpResponse
     if Workbook is None:  # pragma: no cover
         return HttpResponse("XLSX недоступен на сервере.", status=501)
 
+    query = request.GET.get("q", "").strip()
+    votes = _get_people_votes(poll, query=query)
+
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = "Ответы"
-    _write_people_rows(worksheet.append, poll)
+    _write_people_rows(worksheet.append, poll, votes=votes)
 
     content = BytesIO()
     workbook.save(content)
@@ -474,9 +473,12 @@ def poll_results_people_xls(request: HttpRequest, poll_id: int) -> HttpResponse:
     if xlwt is None:  # pragma: no cover
         return HttpResponse("XLS недоступен на сервере.", status=501)
 
+    query = request.GET.get("q", "").strip()
+    votes = _get_people_votes(poll, query=query)
+
     workbook = xlwt.Workbook()
     worksheet = workbook.add_sheet("Ответы")
-    _write_people_rows(lambda row: _xls_append_row(worksheet, row), poll)
+    _write_people_rows(lambda row: _xls_append_row(worksheet, row), poll, votes=votes)
 
     content = BytesIO()
     workbook.save(content)
@@ -485,6 +487,23 @@ def poll_results_people_xls(request: HttpRequest, poll_id: int) -> HttpResponse:
     response = HttpResponse(content.getvalue(), content_type="application/vnd.ms-excel")
     response["Content-Disposition"] = f'attachment; filename="poll_{poll_id}_people.xls"'
     return response
+
+
+def _get_people_votes(
+    poll: Poll,
+    *,
+    query: str = "",
+    order_by: str = "created_at",
+) -> models.QuerySet[Vote]:
+    votes = Vote.objects.filter(poll=poll).select_related("workplace").order_by(order_by)
+    query = query.strip()
+    if not query:
+        return votes
+    return votes.filter(
+        models.Q(full_name__icontains=query)
+        | models.Q(voter_ip__icontains=query)
+        | models.Q(workplace__label__icontains=query)
+    )
 
 
 @staff_member_required
@@ -646,22 +665,34 @@ def _write_results_rows(write_row, poll: Poll) -> None:
             write_row([choice.text, count, f"{percent:.2f}%"])
 
 
-def _write_people_rows(write_row, poll: Poll) -> None:
+def _write_people_rows(
+    write_row,
+    poll: Poll,
+    *,
+    votes: models.QuerySet[Vote] | None = None,
+) -> None:
     questions = list(poll.questions.order_by("order", "id"))
     header = ["IP", "Рабочее место", "Подразделение", "ФИО", "Дата"]
     header.extend([question.text for question in questions])
     write_row(header)
 
-    answers = (
-        VoteAnswer.objects.filter(vote__poll=poll)
-        .select_related("vote", "choice", "question", "vote__workplace")
-        .order_by("vote__created_at")
-    )
+    if votes is None:
+        votes = Vote.objects.filter(poll=poll).select_related("workplace").order_by("created_at")
+    votes_list = list(votes)
+    vote_ids = [vote.id for vote in votes_list]
+    if vote_ids:
+        answers = (
+            VoteAnswer.objects.filter(vote_id__in=vote_ids)
+            .select_related("vote", "choice", "question", "vote__workplace")
+            .order_by("vote__created_at")
+        )
+    else:
+        answers = VoteAnswer.objects.none()
     answers_map: dict[int, dict[int, list[VoteAnswer]]] = {}
     for answer in answers:
         answers_map.setdefault(answer.vote_id, {}).setdefault(answer.question_id, []).append(answer)
 
-    for vote in Vote.objects.filter(poll=poll).select_related("workplace").order_by("created_at"):
+    for vote in votes_list:
         row = [
             vote.voter_ip,
             vote.workplace.label if vote.workplace else "",
