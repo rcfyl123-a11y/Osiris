@@ -1,4 +1,4 @@
-"""Main URL configuration for Osiris project.
+"""Главная маршрутизация URL для проекта Osiris.
 
 Path: osiris/config/urls.py
 """
@@ -22,6 +22,7 @@ urlpatterns = [
 ]
 
 APPS_DIR = Path(__file__).resolve().parent.parent / "apps"
+# Динамически подключаем URL-ы приложений из osiris/apps, если есть urls.py.
 logger = logging.getLogger(__name__)
 
 for app_path in sorted(APPS_DIR.iterdir(), key=lambda path: path.name):
