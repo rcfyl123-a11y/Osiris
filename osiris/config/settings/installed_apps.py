@@ -1,4 +1,4 @@
-"""Installed apps discovery for Osiris.
+"""Обнаружение приложений для INSTALLED_APPS в Osiris.
 
 Path: osiris/config/settings/installed_apps.py
 """
@@ -11,7 +11,6 @@ from typing import Iterable
 from django.apps import AppConfig
 
 from .environment import ENABLE_DEBUG_TOOLBAR
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +26,18 @@ DJANGO_CORE_APPS = [
 
 
 def _iter_osiris_app_names() -> Iterable[str]:
-    """Yield osiris app package names from the apps namespace."""
+    """Вернуть имена пакетов приложений из пространства osiris.apps."""
     import osiris.apps
 
-    return sorted(module.name for module in pkgutil.iter_modules(osiris.apps.__path__))
+    return sorted(
+        module.name
+        for module in pkgutil.iter_modules(osiris.apps.__path__)
+        if module.ispkg
+    )
 
 
 def _resolve_app_config(app_name: str) -> str | None:
-    """Return the dotted path to an AppConfig subclass for a given app."""
+    """Найти AppConfig в apps.py приложения и вернуть путь вида osiris.apps.<app>.apps.<Config>."""
     module_path = f"osiris.apps.{app_name}.apps"
     try:
         apps_module = importlib.import_module(module_path)
@@ -82,7 +85,7 @@ def _resolve_app_config(app_name: str) -> str | None:
 
 
 def _collect_osiris_apps() -> list[str]:
-    """Collect AppConfig paths for osiris apps that can be imported."""
+    """Собрать список AppConfig для приложений, которые удалось импортировать."""
     configs = []
     for app_name in _iter_osiris_app_names():
         config_path = _resolve_app_config(app_name)
