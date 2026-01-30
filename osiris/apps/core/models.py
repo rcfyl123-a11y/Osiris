@@ -142,3 +142,26 @@ class DeniedIPAttempt(models.Model):
 
     def __str__(self) -> str:
         return f"{self.ip_address} ({self.created_at:%Y-%m-%d %H:%M:%S})"
+
+
+class AppInventory(models.Model):
+    app_name = models.CharField(max_length=255, unique=True, verbose_name="Полное имя приложения")
+    app_label = models.CharField(max_length=100, verbose_name="Ярлык приложения")
+    app_path = models.CharField(max_length=512, verbose_name="Путь приложения")
+    file_hashes = models.JSONField(default=dict, verbose_name="Хеши файлов")
+    aggregate_hash = models.CharField(max_length=64, verbose_name="Сводный хеш")
+    recorded_at = models.DateTimeField(auto_now_add=True, verbose_name="Первичное обнаружение")
+    last_seen_at = models.DateTimeField(auto_now=True, verbose_name="Последнее обнаружение")
+    last_changed_at = models.DateTimeField(null=True, blank=True, verbose_name="Последнее изменение")
+    missing_since = models.DateTimeField(null=True, blank=True, verbose_name="Отсутствует с")
+
+    class Meta:
+        verbose_name = "Инвентаризация приложения"
+        verbose_name_plural = "Инвентаризация приложений"
+        indexes = [
+            models.Index(fields=["app_name"], name="core_app_inv_name_idx"),
+            models.Index(fields=["missing_since"], name="core_app_inv_missing_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.app_label} ({self.app_name})"
