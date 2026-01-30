@@ -7,6 +7,7 @@ class PanelPermission(models.Model):
     class Meta:
         permissions = [
             ("core_security_view", "Can view core security panel"),
+            ("core_users_manage", "Can manage core users"),
         ]
         verbose_name = "Panel permission"
         verbose_name_plural = "Panel permissions"

@@ -11,4 +11,5 @@ urlpatterns = [
     path("core/ip-records/", views.PanelIPRecordListView.as_view(), name="ip_records"),
     path("core/denied/", views.PanelDeniedListView.as_view(), name="denied"),
     path("core/status/", views.PanelStatusView.as_view(), name="status"),
+    path("core/users/", views.PanelUsersView.as_view(), name="users"),
 ]

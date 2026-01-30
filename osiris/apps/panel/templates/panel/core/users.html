@@ -1,0 +1,145 @@
+{% extends "panel/panel_base.html" %}
+
+{% block panel_content %}
+<h2 class="h5 mb-3">Управление пользователями</h2>
+
+<p class="text-muted">Создание, удаление и назначение ролей для пользователей панели.</p>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="h6">Новый пользователь</h3>
+        <form method="post" class="row g-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            <div class="col-md-4">
+                <label class="form-label" for="username">Логин</label>
+                <input class="form-control" id="username" name="username" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="email">Email</label>
+                <input class="form-control" id="email" type="email" name="email">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="password">Пароль</label>
+                <input class="form-control" id="password" type="password" name="password" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="role">Роль</label>
+                <select class="form-select" id="role" name="role">
+                    <option value="user">Пользователь</option>
+                    <option value="staff">Staff</option>
+                    <option value="superuser">Суперпользователь</option>
+                </select>
+            </div>
+            <div class="col-md-8">
+                <label class="form-label" for="groups">Группы</label>
+                <select class="form-select" id="groups" name="groups" multiple>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                    {% empty %}
+                        <option disabled>Группы не настроены</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Можно выбрать несколько групп.</div>
+            </div>
+            <div class="col-12">
+                <button class="btn btn-primary" type="submit">Создать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h3 class="h6">Пользователи</h3>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0 panel-table">
+                <thead>
+                <tr>
+                    <th>Логин</th>
+                    <th>Email</th>
+                    <th>Статус</th>
+                    <th>Роли</th>
+                    <th>Группы</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user_item in users %}
+                    <tr>
+                        <td>{{ user_item.username }}</td>
+                        <td>{{ user_item.email|default:"—" }}</td>
+                        <td>
+                            {% if user_item.is_active %}
+                                <span class="badge bg-success">Активен</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Отключён</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user_item.is_superuser %}
+                                <span class="badge bg-danger">Superuser</span>
+                            {% elif user_item.is_staff %}
+                                <span class="badge bg-primary">Staff</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">User</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user_item.groups.all %}
+                                {% for group in user_item.groups.all %}
+                                    <span class="badge bg-info text-dark">{{ group.name }}</span>
+                                {% empty %}
+                                    <span class="text-muted">—</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="d-flex flex-column gap-2">
+                            <form method="post" class="d-flex gap-2 flex-wrap">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ user_item.id }}">
+                                <button class="btn btn-outline-secondary btn-sm" name="action" value="toggle_active" type="submit">
+                                    {% if user_item.is_active %}Отключить{% else %}Активировать{% endif %}
+                                </button>
+                                {% if user_item.is_staff %}
+                                    <button class="btn btn-outline-warning btn-sm" name="action" value="unset_staff" type="submit">Снять staff</button>
+                                {% else %}
+                                    <button class="btn btn-outline-primary btn-sm" name="action" value="set_staff" type="submit">Сделать staff</button>
+                                {% endif %}
+                                {% if user_item.is_superuser %}
+                                    <button class="btn btn-outline-warning btn-sm" name="action" value="unset_superuser" type="submit">Снять superuser</button>
+                                {% else %}
+                                    <button class="btn btn-outline-danger btn-sm" name="action" value="set_superuser" type="submit">Сделать superuser</button>
+                                {% endif %}
+                                <button class="btn btn-outline-danger btn-sm" name="action" value="delete" type="submit">Удалить</button>
+                            </form>
+                            <form method="post" class="d-flex flex-column gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ user_item.id }}">
+                                <input type="hidden" name="action" value="update_groups">
+                                <select class="form-select form-select-sm" name="groups" multiple>
+                                    {% for group in groups %}
+                                        <option value="{{ group.id }}" {% if group in user_item.groups.all %}selected{% endif %}>
+                                            {{ group.name }}
+                                        </option>
+                                    {% empty %}
+                                        <option disabled>Группы не настроены</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-outline-secondary btn-sm" type="submit">Обновить группы</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-muted">Пользователи не найдены.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
