@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Max
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -149,6 +150,17 @@ class Question(models.Model):
 
     def __str__(self) -> str:
         return self.text
+
+    def save(self, *args, **kwargs):
+        if self.order == 0 and self.poll_id:
+            max_order = (
+                Question.objects.filter(poll_id=self.poll_id)
+                .exclude(pk=self.pk)
+                .aggregate(value=Max("order"))
+                .get("value")
+            )
+            self.order = (max_order or 0) + 1
+        super().save(*args, **kwargs)
 
 
 class Choice(models.Model):
