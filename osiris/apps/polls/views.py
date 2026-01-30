@@ -112,6 +112,9 @@ def poll_question_delete(request: HttpRequest, poll_id: int, question_id: int) -
 
 
 def _get_poll(slug_or_id: str) -> Poll:
+    poll = Poll.objects.filter(slug=slug_or_id).first()
+    if poll:
+        return poll
     if slug_or_id.isdigit():
         return get_object_or_404(Poll, pk=int(slug_or_id))
     return get_object_or_404(Poll, slug=slug_or_id)
