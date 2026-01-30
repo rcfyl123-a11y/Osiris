@@ -5,6 +5,12 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3">Голосования</h1>
+    {% if user.is_staff %}
+        <a class="btn btn-primary" href="{% url 'polls:poll_create' %}">
+            <i class="fa-solid fa-plus me-1"></i>
+            Создать голосование
+        </a>
+    {% endif %}
 </div>
 
 {% if polls %}
