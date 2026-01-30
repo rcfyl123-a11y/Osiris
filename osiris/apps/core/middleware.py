@@ -168,6 +168,7 @@ class IPAllowlistMiddleware:
                 throttle_key="perimeter",
             )
             if self.settings.mode != "audit":
+                self._record_denied_ip(request, client_ip, "IP not in allowlist")
                 return HttpResponseForbidden("Доступ запрещен: IP-адрес не разрешен")
         elif not self.settings.allowlist and self.settings.mode in {"perimeter", "bind"}:
             if self.settings.fail_closed_empty_allowlist:
@@ -179,6 +180,7 @@ class IPAllowlistMiddleware:
                     status_code=403,
                     throttle_key="empty_allowlist",
                 )
+                self._record_denied_ip(request, client_ip, "Empty allowlist (fail-closed)")
                 return HttpResponseForbidden("Доступ запрещен: IP-адрес не разрешен")
 
         user = getattr(request, "user", None)
@@ -195,6 +197,7 @@ class IPAllowlistMiddleware:
                         status_code=403,
                         throttle_key="bind",
                     )
+                    self._record_denied_ip(request, client_ip, "User not bound to workstation")
                     return HttpResponseForbidden("Доступ запрещен: рабочее место не разрешено")
                 self._record_event(
                     event_type="BIND_MISMATCH",
@@ -248,6 +251,7 @@ class IPAllowlistMiddleware:
                 status_code=403,
                 throttle_key="download_auth",
             )
+            self._record_denied_ip(request, client_ip, "Download requires authentication")
             return False
         if self.settings.download_require_bind and self.settings.mode == "bind" and is_authenticated:
             if not self._is_user_bound(user, client_ip):
@@ -260,6 +264,7 @@ class IPAllowlistMiddleware:
                     status_code=403,
                     throttle_key="download_bind",
                 )
+                self._record_denied_ip(request, client_ip, "Download requires bind")
                 return False
         return True
 
@@ -372,6 +377,27 @@ class IPAllowlistMiddleware:
             path=_truncate(path, 512),
             method=_truncate(method, 12),
             status_code=status_code,
+            user_agent=_truncate(user_agent, 255),
+            reason=_truncate(reason, 255),
+        )
+
+    def _record_denied_ip(self, request, ip_address: str | None, reason: str) -> None:
+        if not ip_address:
+            ip_address = "0.0.0.0"
+
+        try:
+            model = apps.get_model("core", "DeniedIPAttempt")
+        except LookupError:
+            return
+
+        path = request.path if request is not None else ""
+        method = request.method if request is not None else ""
+        user_agent = request.META.get("HTTP_USER_AGENT") if request is not None else ""
+
+        model.objects.create(
+            ip_address=ip_address,
+            attempted_path=_truncate(path, 512),
+            attempted_method=_truncate(method, 12),
             user_agent=_truncate(user_agent, 255),
             reason=_truncate(reason, 255),
         )
