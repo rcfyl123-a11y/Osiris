@@ -8,11 +8,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from osiris.apps.blog import views as blog_views
+from osiris.apps.core import views as core_views
 from osiris.config import views as config_views
 
 urlpatterns = [
-    path("", blog_views.home, name="home"),
+    path("", core_views.home, name="home"),
     path("admin/", admin.site.urls),
     path("health/", config_views.health_check, name="health"),
 ]

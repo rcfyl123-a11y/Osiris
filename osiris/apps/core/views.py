@@ -1,10 +1,18 @@
-"""osiris.apps.accounts.views — представления регистрации и аутентификации."""
+"""osiris.apps.core.views — базовые представления приложения core."""
 
 from django.contrib.auth import login
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from .forms import SignupForm
+
+
+NAVBAR_MESSAGE = "Добро пожаловать в Osiris!"
+
+
+def home(request: HttpRequest) -> HttpResponse:
+    """Отрисовать главную страницу приложения."""
+    return render(request, "core/index.html", {"navbar_message": NAVBAR_MESSAGE})
 
 
 def signup(request: HttpRequest) -> HttpResponse:
@@ -18,4 +26,4 @@ def signup(request: HttpRequest) -> HttpResponse:
     else:
         form = SignupForm()
 
-    return render(request, "accounts/registration/signup.html", {"form": form})
+    return render(request, "core/registration/signup.html", {"form": form})
