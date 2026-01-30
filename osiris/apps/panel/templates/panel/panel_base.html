@@ -42,6 +42,10 @@
                        class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'status' %}active{% endif %}">
                         Настройки/состояние
                     </a>
+                    <a href="{% url 'panel:app_inventory' %}"
+                       class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'app_inventory' %}active{% endif %}">
+                        Инвентарь приложений
+                    </a>
                 {% else %}
                     <div class="list-group-item text-muted">Нет доступа к Core Security</div>
                 {% endif %}

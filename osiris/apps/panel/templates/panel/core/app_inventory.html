@@ -1,0 +1,68 @@
+{% extends "panel/panel_base.html" %}
+
+{% block panel_content %}
+    <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="h4 mb-1">Инвентарь приложений</h2>
+            <p class="text-muted mb-0">Отслеживание установленных приложений и их файлов.</p>
+        </div>
+        <form method="post" class="d-flex align-items-center">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary">Обновить инвентарь</button>
+        </form>
+    </div>
+
+    {% if inventory_rows %}
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0 panel-table">
+                        <thead>
+                            <tr>
+                                <th>Приложение</th>
+                                <th>Путь</th>
+                                <th>Статус</th>
+                                <th>Последнее изменение</th>
+                                <th>Отсутствует с</th>
+                                <th>Последнее обнаружение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in inventory_rows %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ row.entry.app_label }}</div>
+                                        <div class="text-muted small">{{ row.entry.app_name }}</div>
+                                    </td>
+                                    <td class="text-muted small">{{ row.entry.app_path }}</td>
+                                    <td>
+                                        {% if row.status == "missing" %}
+                                            <span class="badge bg-danger">Отсутствует</span>
+                                        {% elif row.status == "changed" %}
+                                            <span class="badge bg-warning text-dark">Изменено</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Ок</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ row.entry.last_changed_at|date:"Y-m-d H:i" }}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ row.entry.missing_since|date:"Y-m-d H:i" }}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ row.entry.last_seen_at|date:"Y-m-d H:i" }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info mb-0">
+            Инвентарь ещё не заполнен. Нажмите «Обновить инвентарь», чтобы создать записи.
+        </div>
+    {% endif %}
+{% endblock %}
