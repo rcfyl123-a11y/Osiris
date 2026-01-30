@@ -35,11 +35,14 @@
 body {
     line-height: 1.6;
     scroll-padding-top: 4rem;
-    opacity: 0;
     transition: opacity .3s ease-in-out;
 }
 
-body.loaded {
+.js-enabled body {
+    opacity: 0;
+}
+
+.js-enabled body.loaded {
     opacity: 1;
 }
 
