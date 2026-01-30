@@ -1,4 +1,8 @@
-# config/settings/logging.py
+"""Logging configuration for Osiris using Loguru.
+
+Path: osiris/config/settings/logging.py
+"""
+
 from __future__ import annotations
 
 import logging

@@ -1,3 +1,8 @@
+"""Filesystem directory settings for Osiris.
+
+Path: osiris/config/settings/directories.py
+"""
+
 import logging
 
 from .environment import PROJECT_DIR
@@ -11,7 +16,7 @@ MEDIA_ROOT_PATH = PROJECT_DIR / "media"
 
 
 def ensure_directory(path):
-    """Создает директорию, если она не существует"""
+    """Create a directory if it does not exist and return the path."""
     if not path.exists():
         path.mkdir(parents=True, exist_ok=True)
         log.info(f"Создана директория: {path}")
@@ -19,7 +24,7 @@ def ensure_directory(path):
 
 
 def setup_directories():
-    """Создает все необходимые директории для проекта"""
+    """Create and validate required static/media directories."""
     try:
         # Папки для статики
         for static_dir in STATICFILES_DIRS_PATHS:

@@ -1,5 +1,6 @@
 """
 ASGI config for Osiris project.
+Path: osiris/config/asgi.py
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

@@ -1,1 +1,4 @@
-"""Project configuration package."""
+"""Project configuration package.
+
+Path: osiris/config/__init__.py
+"""
