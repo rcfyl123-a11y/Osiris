@@ -244,6 +244,27 @@ footer {
     transform: scale(1.1);
 }
 
+/* Уважение настройки уменьшенного движения */
+@media (prefers-reduced-motion: reduce) {
+    .navbar,
+    .btn,
+    .dropdown-menu,
+    .alert,
+    .nav-link {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .nav-link:not(.dropdown-toggle)::after {
+        transition: none !important;
+    }
+
+    .btn::before {
+        display: none;
+        transition: none !important;
+    }
+}
+
 /* «Стеклянный» навбар — цвета задаёт тема */
 .glass-effect {
     border: none !important;
