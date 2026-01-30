@@ -1,6 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Явка — {{ poll.title }}{% endblock %}
+
+{% block css %}
+  <link href="{% static 'css/polls.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 <div class="mb-4">

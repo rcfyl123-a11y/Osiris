@@ -130,8 +130,13 @@
 {% else %}
   <div class="card border-0 bg-light">
     <div class="card-body">
-      <div class="fw-semibold mb-1">Голосов пока нет</div>
-      <div class="text-muted">Когда появятся ответы, они будут отображаться здесь.</div>
+      {% if query %}
+        <div class="fw-semibold mb-1">Ничего не найдено</div>
+        <div class="text-muted">По запросу «{{ query }}» нет совпадений. Попробуйте изменить фильтр.</div>
+      {% else %}
+        <div class="fw-semibold mb-1">Голосов пока нет</div>
+        <div class="text-muted">Когда появятся ответы, они будут отображаться здесь.</div>
+      {% endif %}
     </div>
   </div>
 {% endif %}
