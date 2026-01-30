@@ -1,3 +1,8 @@
+"""Installed apps discovery for Osiris.
+
+Path: osiris/config/settings/installed_apps.py
+"""
+
 import importlib
 import logging
 import pkgutil
@@ -22,12 +27,14 @@ DJANGO_CORE_APPS = [
 
 
 def _iter_osiris_app_names() -> Iterable[str]:
+    """Yield osiris app package names from the apps namespace."""
     import osiris.apps
 
     return sorted(module.name for module in pkgutil.iter_modules(osiris.apps.__path__))
 
 
 def _resolve_app_config(app_name: str) -> str | None:
+    """Return the dotted path to an AppConfig subclass for a given app."""
     module_path = f"osiris.apps.{app_name}.apps"
     try:
         apps_module = importlib.import_module(module_path)
@@ -75,6 +82,7 @@ def _resolve_app_config(app_name: str) -> str | None:
 
 
 def _collect_osiris_apps() -> list[str]:
+    """Collect AppConfig paths for osiris apps that can be imported."""
     configs = []
     for app_name in _iter_osiris_app_names():
         config_path = _resolve_app_config(app_name)

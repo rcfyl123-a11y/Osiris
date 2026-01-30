@@ -1,3 +1,8 @@
+"""Template and message tag configuration for Osiris.
+
+Path: osiris/config/settings/templates.py
+"""
+
 from django.contrib.messages import constants as messages
 
 from .environment import PROJECT_DIR

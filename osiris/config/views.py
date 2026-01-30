@@ -1,4 +1,7 @@
-"""Project-level views for Osiris."""
+"""Project-level views for Osiris.
+
+Path: osiris/config/views.py
+"""
 
 from django.http import JsonResponse
 from django.shortcuts import render

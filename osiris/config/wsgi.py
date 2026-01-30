@@ -1,5 +1,6 @@
 """
 WSGI config for Osiris project.
+Path: osiris/config/wsgi.py
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

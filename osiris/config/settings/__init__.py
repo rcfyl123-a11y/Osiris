@@ -1,4 +1,7 @@
-"""osiris.config.settings — агрегатор модулей настроек Django-проекта."""
+"""osiris.config.settings — агрегатор модулей настроек Django-проекта.
+
+Path: osiris/config/settings/__init__.py
+"""
 
 # Конфигурация логирования
 from .logging import *

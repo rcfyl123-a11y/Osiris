@@ -1,3 +1,8 @@
+"""Database configuration for Osiris.
+
+Path: osiris/config/settings/database.py
+"""
+
 import os
 from pathlib import Path
 from urllib.parse import urlparse
@@ -6,6 +11,7 @@ from .environment import POSTGRES_READY, VAR_DIR
 
 
 def _sqlite_config(path: str | None) -> dict:
+    """Build a SQLite database configuration dictionary."""
     db_path = Path(path).expanduser() if path else VAR_DIR / "db.sqlite3"
     return {
         "ENGINE": "django.db.backends.sqlite3",
@@ -14,6 +20,7 @@ def _sqlite_config(path: str | None) -> dict:
 
 
 def _postgres_config(parsed) -> dict:
+    """Build a PostgreSQL database configuration dictionary."""
     return {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": parsed.path.lstrip("/"),
@@ -26,6 +33,7 @@ def _postgres_config(parsed) -> dict:
 
 
 def _database_from_url(url: str) -> dict | None:
+    """Create a database config dictionary from a DATABASE_URL string."""
     parsed = urlparse(url)
     scheme = (parsed.scheme or "").lower()
     if scheme in {"sqlite", "sqlite3"}:

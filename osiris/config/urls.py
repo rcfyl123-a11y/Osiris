@@ -1,4 +1,7 @@
-"""Main URL configuration for Osiris project."""
+"""Main URL configuration for Osiris project.
+
+Path: osiris/config/urls.py
+"""
 
 import logging
 from pathlib import Path

@@ -1,3 +1,8 @@
+"""Chat feature settings for Osiris.
+
+Path: osiris/config/settings/chat.py
+"""
+
 import os
 
 
