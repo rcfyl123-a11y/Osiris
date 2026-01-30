@@ -1,5 +1,3 @@
-"""osiris.apps.core.apps — конфигурация приложения Core."""
-
 from django.apps import AppConfig
 
 

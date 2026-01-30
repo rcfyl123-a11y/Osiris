@@ -82,6 +82,21 @@ def _env_bool(value: str | None) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _env_list(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _env_int(value: str | None, default: int) -> int:
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
 # Базовые настройки
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY", "dev-insecure-key-change-me")
 
@@ -98,6 +113,21 @@ _allowed_hosts_env = os.getenv("DJANGO_ALLOWED_HOSTS") or os.getenv("ALLOWED_HOS
 ALLOWED_HOSTS = [h.strip() for h in (_allowed_hosts_env or _default_allowed_hosts).split(",") if h.strip()]
 
 log.debug(f"DEBUG: {DEBUG}")
+
+IP_MODE = (os.getenv("DJANGO_IP_MODE", "audit") or "audit").strip().lower()
+
+IP_ALLOWLIST = _env_list(os.getenv("DJANGO_IP_ALLOWLIST") or os.getenv("IP_ALLOWLIST", ""))
+IP_TRUST_X_FORWARDED_FOR = _env_bool(os.getenv("DJANGO_TRUST_X_FORWARDED_FOR", "0"))
+IP_TRUSTED_PROXIES = _env_list(os.getenv("DJANGO_TRUSTED_PROXIES", ""))
+IP_FAIL_CLOSED_EMPTY_ALLOWLIST = _env_bool(os.getenv("DJANGO_IP_FAIL_CLOSED_EMPTY_ALLOWLIST", "0"))
+IP_EXEMPT_PATHS = _env_list(os.getenv("DJANGO_IP_EXEMPT_PATHS", ""))
+IP_APPLY_TO_STATIC_MEDIA = _env_bool(os.getenv("DJANGO_IP_APPLY_TO_STATIC_MEDIA", "1"))
+IP_RECORD_THROTTLE_SECONDS = _env_int(os.getenv("DJANGO_IP_RECORD_THROTTLE_SECONDS"), 60)
+SECURITY_RETENTION_DAYS = _env_int(os.getenv("DJANGO_SECURITY_RETENTION_DAYS"), 90)
+IP_BIND_ENFORCE = _env_bool(os.getenv("DJANGO_BIND_ENFORCE", "1"))
+DOWNLOAD_REQUIRE_AUTH = _env_bool(os.getenv("DJANGO_DOWNLOAD_REQUIRE_AUTH", "0"))
+DOWNLOAD_REQUIRE_BIND = _env_bool(os.getenv("DJANGO_DOWNLOAD_REQUIRE_BIND", "0"))
+DOWNLOAD_PATHS = _env_list(os.getenv("DJANGO_DOWNLOAD_PATHS", ""))
 
 # Язык и время
 LANGUAGE_CODE = os.getenv("DJANGO_LANGUAGE_CODE", "ru-ru")
