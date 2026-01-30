@@ -12,12 +12,12 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if p == '/' %}active{% endif %}" href="/">Главная</a>
+                        <a class="nav-link {% if p == '/' %}active{% endif %}" href="/"{% if p == '/' %} aria-current="page"{% endif %}>Главная</a>
                     </li>
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if p|slice:':5' == '/rca/' %}active{% endif %}"
-                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"{% if p|slice:':5' == '/rca/' %} aria-current="page"{% endif %}>
                             RCA
                         </a>
                         <ul class="dropdown-menu">
@@ -41,21 +41,21 @@
 
                     <li class="nav-item">
                         <a class="nav-link {% if p|slice:':8' == '/health/' or p == '/health/' %}active{% endif %}"
-                           href="/health/">
+                           href="/health/"{% if p|slice:':8' == '/health/' or p == '/health/' %} aria-current="page"{% endif %}>
                             Health
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link {% if p|slice:':7' == '/polls/' %}active{% endif %}"
-                           href="/polls/">
+                           href="/polls/"{% if p|slice:':7' == '/polls/' %} aria-current="page"{% endif %}>
                             Голосования
                         </a>
                     </li>
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if p|slice:':6' == '/chat/' %}active{% endif %}"
-                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"{% if p|slice:':6' == '/chat/' %} aria-current="page"{% endif %}>
                             Чаты
                         </a>
                         <ul class="dropdown-menu">
