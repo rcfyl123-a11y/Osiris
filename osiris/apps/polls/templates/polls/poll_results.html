@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load poll_extras %}
+
+{% block title %}Результаты — {{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h3">Результаты: {{ poll.title }}</h1>
+    <p class="text-muted">Явка: {{ turnout.voted_count }} / {{ turnout.eligible_count }}</p>
+    <div class="d-flex gap-2">
+        <a href="{% url 'polls:poll_results_csv' poll.id %}" class="btn btn-outline-secondary btn-sm">CSV</a>
+        {% if user.is_staff %}
+            <a href="{% url 'polls:poll_turnout' poll.id %}" class="btn btn-outline-primary btn-sm">Явка</a>
+        {% endif %}
+    </div>
+</div>
+
+{% for block in result_blocks %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">{{ block.question.text }}</h2>
+            {% if block.question.help_text %}
+                <p class="text-muted">{{ block.question.help_text }}</p>
+            {% endif %}
+            <p class="text-muted small">Всего ответов: {{ block.total }}</p>
+
+            {% if block.type == "text" %}
+                {% with answers=text_pages|get_item:block.question.id %}
+                {% if answers %}
+                    <ul class="list-group list-group-flush">
+                        {% for answer in answers %}
+                            <li class="list-group-item">{{ answer.answer_text }}</li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Нет ответов.</li>
+                        {% endfor %}
+                    </ul>
+                    <nav class="mt-3">
+                        <ul class="pagination pagination-sm">
+                            {% if answers.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?q{{ block.question.id }}_page={{ answers.previous_page_number }}">&laquo;</a>
+                                </li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ answers.number }}</span></li>
+                            {% if answers.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?q{{ block.question.id }}_page={{ answers.next_page_number }}">&raquo;</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% else %}
+                    <p class="text-muted">Нет ответов.</p>
+                {% endif %}
+                {% endwith %}
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Вариант</th>
+                                <th>Кол-во</th>
+                                <th>Процент</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in block.choices %}
+                                <tr>
+                                    <td>{{ item.choice.text }}</td>
+                                    <td>{{ item.count }}</td>
+                                    <td style="min-width: 220px;">
+                                        <div class="progress" role="progressbar" aria-valuenow="{{ item.percent|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar" style="width: {{ item.percent }}%"></div>
+                                        </div>
+                                        <div class="small text-muted">{{ item.percent|floatformat:1 }}%</div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}
