@@ -22,17 +22,20 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="{% url 'rca:org_list' %}">
+                                <a class="dropdown-item" href="{% url 'rca:org_list' %}" data-bs-toggle="tooltip"
+                                   title="Орг.структура">
                                     <i class="fas fa-sitemap me-2"></i>Орг.структура
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'rca:post_list' %}">
+                                <a class="dropdown-item" href="{% url 'rca:post_list' %}" data-bs-toggle="tooltip"
+                                   title="Должности">
                                     <i class="fas fa-id-badge me-2"></i>Должности
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'rca:employee_list' %}">
+                                <a class="dropdown-item" href="{% url 'rca:employee_list' %}" data-bs-toggle="tooltip"
+                                   title="Сотрудники">
                                     <i class="fas fa-users me-2"></i>Сотрудники
                                 </a>
                             </li>
@@ -60,12 +63,14 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="{% url 'chat:room_list' %}">
+                                <a class="dropdown-item" href="{% url 'chat:room_list' %}" data-bs-toggle="tooltip"
+                                   title="Все комнаты">
                                     <i class="fas fa-comments me-2"></i>Все комнаты
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'chat:create_direct_chat' %}">
+                                <a class="dropdown-item" href="{% url 'chat:create_direct_chat' %}"
+                                   data-bs-toggle="tooltip" title="Личный чат">
                                     <i class="fas fa-user-friends me-2"></i>Личный чат
                                 </a>
                             </li>
@@ -83,19 +88,27 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <button class="dropdown-item theme-select" data-theme="auto">Авто (системная)</button>
+                                <button class="dropdown-item theme-select" data-theme="auto" aria-pressed="false">
+                                    Авто (системная)
+                                </button>
                             </li>
                             <li>
-                                <button class="dropdown-item theme-select" data-theme="light">Светлая</button>
+                                <button class="dropdown-item theme-select" data-theme="light" aria-pressed="false">
+                                    Светлая
+                                </button>
                             </li>
                             <li>
-                                <button class="dropdown-item theme-select" data-theme="dark">Тёмная</button>
+                                <button class="dropdown-item theme-select" data-theme="dark" aria-pressed="false">
+                                    Тёмная
+                                </button>
                             </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
-                                <button class="dropdown-item theme-select" data-theme="contrast">Высокий контраст</button>
+                                <button class="dropdown-item theme-select" data-theme="contrast" aria-pressed="false">
+                                    Высокий контраст
+                                </button>
                             </li>
                         </ul>
                     </div>
@@ -126,7 +139,8 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{% url 'panel:dashboard' %}">
+                                        <a class="dropdown-item" href="{% url 'panel:dashboard' %}"
+                                           data-bs-toggle="tooltip" title="Панель управления">
                                             <i class="fas fa-chart-pie me-2"></i>Панель управления
                                         </a>
                                     </li>

@@ -14,6 +14,7 @@
     };
 
     const root = document.documentElement;
+    root.classList.add('js-enabled');
 
     /**
      * Применяет выбранную тему к документу
@@ -38,11 +39,24 @@
     }
 
     /**
+     * Обновляет состояние кнопок выбора темы
+     * @param {string} mode - выбранный режим темы
+     */
+    function updateThemeButtons(mode) {
+        document.querySelectorAll('.theme-select').forEach(button => {
+            const isActive = button.getAttribute('data-theme') === mode;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+    }
+
+    /**
      * Инициализирует систему тем
      */
     function initTheme() {
         const savedTheme = localStorage.getItem(THEME_KEY) || 'auto';
         applyTheme(savedTheme);
+        updateThemeButtons(savedTheme);
 
         // Слушаем изменения системной темы для auto режима
         const mediaQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
@@ -61,6 +75,7 @@
                 const themeMode = button.getAttribute('data-theme') || 'auto';
                 localStorage.setItem(THEME_KEY, themeMode);
                 applyTheme(themeMode);
+                updateThemeButtons(themeMode);
             });
         });
     }
