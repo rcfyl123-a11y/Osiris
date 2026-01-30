@@ -1,13 +1,13 @@
 """osiris.apps.core.forms — формы для аутентификации и профиля."""
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import (
     AuthenticationForm,
     PasswordResetForm,
     SetPasswordForm,
     UserCreationForm,
 )
-from django.contrib.auth.models import User
 
 
 def _add_bootstrap_class(fields, class_name: str = "form-control") -> None:
@@ -24,7 +24,7 @@ class SignupForm(UserCreationForm):
     """Форма регистрации пользователя с bootstrap-стилями."""
 
     class Meta(UserCreationForm.Meta):
-        model = User
+        model = get_user_model()
         fields = ("username", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
