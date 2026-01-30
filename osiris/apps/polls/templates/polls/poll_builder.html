@@ -1,23 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}Создать голосование{% endblock %}
+{% block title %}Конструктор — {{ poll.title }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h3 mb-1">Создать голосование</h1>
-                <p class="text-muted mb-0">Заполните основные параметры, затем добавьте вопросы в конструкторе.</p>
-            </div>
-            <a class="btn btn-outline-secondary" href="{% url 'polls:poll_list' %}">К списку</a>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Конструктор: {{ poll.title }}</h1>
+        <p class="text-muted mb-0">Редактируйте параметры, вопросы и варианты ответов.</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if poll.status != "draft" %}
+            <a class="btn btn-outline-primary" href="{% url 'polls:poll_detail' poll.slug %}">Просмотр</a>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{% url 'polls:poll_list' %}">К списку</a>
+    </div>
+</div>
 
+<div class="row g-4">
+    <div class="col-lg-6">
         <div class="card shadow-sm">
+            <div class="card-header bg-transparent">
+                <h2 class="h6 mb-0">Параметры голосования</h2>
+            </div>
             <div class="card-body">
                 <form method="post" novalidate>
                     {% csrf_token %}
-
                     <div class="mb-3">
                         {{ form.title.label_tag }}
                         {{ form.title }}
@@ -25,7 +32,6 @@
                             <div class="text-danger small">{{ form.title.errors|join:", " }}</div>
                         {% endif %}
                     </div>
-
                     <div class="mb-3">
                         {{ form.description.label_tag }}
                         {{ form.description }}
@@ -33,7 +39,6 @@
                             <div class="text-danger small">{{ form.description.errors|join:", " }}</div>
                         {% endif %}
                     </div>
-
                     <div class="row g-3">
                         <div class="col-md-6">
                             {{ form.status.label_tag }}
@@ -82,7 +87,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <h2 class="h6">Аудитория</h2>
+                        <h3 class="h6">Аудитория</h3>
                         <div class="form-check mb-2">
                             {{ form.audience_all }}
                             {{ form.audience_all.label_tag }}
@@ -97,13 +102,66 @@
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 justify-content-end">
-                        <button class="btn btn-primary" type="submit">Создать</button>
-                        <a class="btn btn-outline-secondary" href="{% url 'polls:poll_list' %}">Отмена</a>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-primary" type="submit">Сохранить</button>
                     </div>
                 </form>
             </div>
         </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h6 mb-0">Вопросы</h2>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'polls:poll_question_create' poll.id %}">
+                <i class="fa-solid fa-plus me-1"></i>
+                Добавить вопрос
+            </a>
+        </div>
+
+        {% if questions %}
+            <div class="d-grid gap-3">
+                {% for question in questions %}
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="h6 mb-1">#{{ forloop.counter }} · {{ question.text }}</h3>
+                                    <div class="text-muted small">
+                                        {{ question.get_type_display }}
+                                        {% if question.required %}
+                                            · обязательный
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'polls:poll_question_edit' poll.id question.id %}">Редактировать</a>
+                                    <form method="post" action="{% url 'polls:poll_question_delete' poll.id question.id %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% if question.help_text %}
+                                <div class="text-muted small mt-2">{{ question.help_text }}</div>
+                            {% endif %}
+                            <ul class="list-group list-group-flush mt-3">
+                                {% for choice in question.choices.all %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ choice.text }}
+                                        <span class="badge bg-light text-dark">#{{ choice.order }}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="list-group-item text-muted">Нет вариантов ответа.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">Пока нет вопросов. Добавьте первый вопрос.</div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

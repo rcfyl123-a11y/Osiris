@@ -14,6 +14,11 @@
     <p class="text-muted">Явка: {{ turnout.voted_count }} / {{ turnout.eligible_count }}</p>
     <div class="d-flex gap-2">
         <a href="{% url 'polls:poll_results_csv' poll.id %}" class="btn btn-outline-secondary btn-sm">CSV</a>
+        <a href="{% url 'polls:poll_results_xlsx' poll.id %}" class="btn btn-outline-secondary btn-sm">XLSX</a>
+        <a href="{% url 'polls:poll_results_xls' poll.id %}" class="btn btn-outline-secondary btn-sm">XLS</a>
+        {% if user.is_staff %}
+            <a href="{% url 'polls:poll_results_people' poll.id %}" class="btn btn-outline-primary btn-sm">Ответы по людям</a>
+        {% endif %}
         {% if user.is_staff %}
             <a href="{% url 'polls:poll_turnout' poll.id %}" class="btn btn-outline-primary btn-sm">Явка</a>
         {% endif %}
@@ -62,10 +67,11 @@
                 <div class="polls-results">
                     {% for item in block.choices %}
                         <div class="polls-result-row">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="polls-result-header">
                                 <div class="fw-semibold">{{ item.choice.text }}</div>
-                                <div class="text-muted small">
-                                    {{ item.count }} голос(ов) · {{ item.percent|floatformat:1 }}%
+                                <div class="polls-result-meta">
+                                    <span class="badge bg-light text-dark">{{ item.count }} голос(ов)</span>
+                                    <span class="badge bg-dark">{{ item.percent|floatformat:1 }}%</span>
                                 </div>
                             </div>
                             <div class="progress polls-progress" role="progressbar" aria-valuenow="{{ item.percent|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">

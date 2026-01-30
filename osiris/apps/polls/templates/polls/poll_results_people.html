@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Ответы по людям — {{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h3">Ответы по людям: {{ poll.title }}</h1>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <a href="{% url 'polls:poll_results' poll.id %}" class="btn btn-outline-secondary btn-sm">К общим результатам</a>
+        <a href="{% url 'polls:poll_results_people_csv' poll.id %}" class="btn btn-outline-secondary btn-sm">CSV</a>
+        <a href="{% url 'polls:poll_results_people_xlsx' poll.id %}" class="btn btn-outline-secondary btn-sm">XLSX</a>
+        <a href="{% url 'polls:poll_results_people_xls' poll.id %}" class="btn btn-outline-secondary btn-sm">XLS</a>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-6">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Поиск по ФИО, IP или рабочему месту">
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-primary" type="submit">Найти</button>
+        <a class="btn btn-outline-secondary" href="{% url 'polls:poll_results_people' poll.id %}">Сбросить</a>
+    </div>
+</form>
+
+{% if votes %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>IP</th>
+                    <th>Рабочее место</th>
+                    <th>Дата</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vote in votes %}
+                    <tr>
+                        <td>{{ vote.full_name|default:"—" }}</td>
+                        <td>{{ vote.voter_ip }}</td>
+                        <td>
+                            {{ vote.workplace.label|default:"—" }}
+                            {% if vote.workplace.department %}
+                                <div class="text-muted small">{{ vote.workplace.department }}</div>
+                            {% endif %}
+                        </td>
+                        <td>{{ vote.created_at|date:"d.m.Y H:i" }}</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'polls:poll_results_person' poll.id vote.id %}">
+                                Ответы
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">Голосов пока нет.</div>
+{% endif %}
+{% endblock %}

@@ -21,10 +21,16 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">
                             <h2 class="h5 mb-2">
-                                <a href="{% url 'polls:poll_detail' poll.slug %}" class="text-decoration-none">{{ poll.title }}</a>
+                                {% if poll.status == "draft" %}
+                                    <span class="text-decoration-none">{{ poll.title }}</span>
+                                {% else %}
+                                    <a href="{% url 'polls:poll_detail' poll.slug %}" class="text-decoration-none">{{ poll.title }}</a>
+                                {% endif %}
                             </h2>
                             {% if poll.status == "closed" or poll.status == "archived" %}
                                 <span class="badge bg-secondary">Закрыто</span>
+                            {% elif poll.status == "draft" %}
+                                <span class="badge bg-warning text-dark">Черновик</span>
                             {% elif poll.is_active %}
                                 <span class="badge bg-success">Идёт голосование</span>
                             {% elif poll.has_started and poll.has_ended %}
@@ -45,8 +51,13 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div class="card-footer bg-transparent border-0">
-                        <a href="{% url 'polls:poll_detail' poll.slug %}" class="btn btn-primary btn-sm">Перейти</a>
+                    <div class="card-footer bg-transparent border-0 d-flex gap-2">
+                        {% if poll.status != "draft" %}
+                            <a href="{% url 'polls:poll_detail' poll.slug %}" class="btn btn-primary btn-sm">Перейти</a>
+                        {% endif %}
+                        {% if user.is_staff %}
+                            <a href="{% url 'polls:poll_builder' poll.id %}" class="btn btn-outline-secondary btn-sm">Конструктор</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
