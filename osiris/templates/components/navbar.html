@@ -123,7 +123,7 @@
                                     </li>
                                 {% endif %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                                    <a class="dropdown-item" href="{% url 'core:logout' %}">
                                         <i class="fas fa-sign-out-alt me-2"></i>Выйти
                                     </a>
                                 </li>
@@ -132,8 +132,8 @@
                     {% else %}
                         <!-- Неавторизованный пользователь -->
                         <div class="d-flex gap-2">
-                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-sm">Войти</a>
-                            <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-sm">Регистрация</a>
+                            <a href="{% url 'core:login' %}" class="btn btn-outline-primary btn-sm">Войти</a>
+                            <a href="{% url 'core:signup' %}" class="btn btn-primary btn-sm">Регистрация</a>
                         </div>
                     {% endif %}
                 </div>

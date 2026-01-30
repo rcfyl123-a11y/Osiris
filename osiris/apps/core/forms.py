@@ -1,4 +1,4 @@
-"""osiris.apps.accounts.forms — формы для аутентификации и профиля."""
+"""osiris.apps.core.forms — формы для аутентификации и профиля."""
 
 from django import forms
 from django.contrib.auth.forms import (
