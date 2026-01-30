@@ -10,6 +10,7 @@ class SecurityEvent(models.Model):
         LOGIN_NEW_IP = "LOGIN_NEW_IP", "Login from new IP"
         FILE_DOWNLOAD = "FILE_DOWNLOAD", "File download"
         SENSITIVE_ACTION = "SENSITIVE_ACTION", "Sensitive action"
+        PANEL_VIEW = "PANEL_VIEW", "Panel view"
 
     event_type = models.CharField(max_length=32, choices=EventType.choices, verbose_name="Тип события")
     user = models.ForeignKey(

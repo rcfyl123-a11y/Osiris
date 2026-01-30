@@ -1,0 +1,33 @@
+.panel-layout {
+    background: var(--bs-body-bg);
+}
+
+.panel-topbar {
+    border-bottom: 1px solid var(--bs-border-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.panel-sidebar .list-group-item.active {
+    font-weight: 600;
+}
+
+.panel-metric {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background: var(--bs-body-bg);
+}
+
+.panel-table td {
+    vertical-align: middle;
+}
+
+.panel-badge {
+    font-size: 0.75rem;
+}
+
+.panel-warning {
+    border-left: 4px solid var(--bs-warning);
+    padding-left: 0.75rem;
+}

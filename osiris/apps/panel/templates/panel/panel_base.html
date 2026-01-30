@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Panel | {{ block.super }}{% endblock %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'panel/panel.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="panel-layout">
+    <div class="panel-topbar d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
+        <div>
+            <h1 class="h3 mb-1">Панель управления</h1>
+            <p class="text-muted mb-0">{{ page_subtitle|default:"Обзор безопасности и активности" }}</p>
+        </div>
+        <div class="text-muted">
+            <span class="me-2">{{ request.user.get_username }}</span>
+            <span class="badge bg-secondary panel-badge">staff</span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <aside class="col-12 col-lg-3 col-xl-2 panel-sidebar">
+            <div class="list-group">
+                <a href="{% url 'panel:dashboard' %}"
+                   class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    Dashboard
+                </a>
+                <div class="list-group-item text-uppercase small text-muted">Core</div>
+                {% if perms.panel.core_security_view %}
+                    <a href="{% url 'panel:ip_records' %}"
+                       class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'ip_records' %}active{% endif %}">
+                        IP активность
+                    </a>
+                    <a href="{% url 'panel:denied' %}"
+                       class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'denied' %}active{% endif %}">
+                        Блокировки
+                    </a>
+                    <a href="{% url 'panel:status' %}"
+                       class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'status' %}active{% endif %}">
+                        Настройки/состояние
+                    </a>
+                {% else %}
+                    <div class="list-group-item text-muted">Нет доступа к Core Security</div>
+                {% endif %}
+            </div>
+        </aside>
+        <section class="col-12 col-lg-9 col-xl-10">
+            {% block panel_content %}{% endblock %}
+        </section>
+    </div>
+</div>
+{% endblock %}

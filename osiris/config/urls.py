@@ -15,6 +15,7 @@ urlpatterns = [
     path("", core_views.home, name="home"),
     path("admin/", admin.site.urls),
     path("health/", config_views.health_check, name="health"),
+    path("panel/", include(("osiris.apps.panel.urls", "panel"), namespace="panel")),
 ]
 
 APPS_DIR = Path(__file__).resolve().parent.parent / "apps"
@@ -26,6 +27,8 @@ for app_path in sorted(APPS_DIR.iterdir(), key=lambda path: path.name):
         if app_urls.exists():
             try:
                 app_name = app_path.name
+                if app_name == "panel":
+                    continue
                 # Подключаем URL-ы только для приложений с urls.py; в DEBUG падём на ошибке импорта.
                 urlpatterns.append(
                     path(f"{app_name}/", include(f"osiris.apps.{app_name}.urls"))
@@ -42,3 +45,6 @@ for app_path in sorted(APPS_DIR.iterdir(), key=lambda path: path.name):
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+handler404 = "osiris.apps.panel.views.panel_not_found"

@@ -1,0 +1,66 @@
+{% extends "panel/panel_base.html" %}
+
+{% block panel_content %}
+<h2 class="h5 mb-3">IP активность</h2>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-12 col-md-3">
+        <label class="form-label" for="user">Пользователь</label>
+        <input id="user" name="user" class="form-control" value="{{ filters.user }}" placeholder="username">
+    </div>
+    <div class="col-12 col-md-3">
+        <label class="form-label" for="ip">IP</label>
+        <input id="ip" name="ip" class="form-control" value="{{ filters.ip }}" placeholder="10.0.0.1">
+    </div>
+    <div class="col-12 col-md-3">
+        <label class="form-label" for="active_hours">Активны за N часов</label>
+        <input id="active_hours" name="active_hours" type="number" class="form-control" value="{{ filters.active_hours }}" min="1">
+    </div>
+    <div class="col-12 col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Фильтр</button>
+        <a href="{% url 'panel:ip_records' %}" class="btn btn-outline-secondary">Сброс</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0 panel-table">
+                <thead>
+                    <tr>
+                        <th>Пользователь</th>
+                        <th>IP</th>
+                        <th>Последний визит</th>
+                        <th>Последний путь</th>
+                        <th>Последняя загрузка</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                        <tr>
+                            <td>{{ record.user.get_username }}</td>
+                            <td>{{ record.ip_address }}</td>
+                            <td>{{ record.last_seen_at|date:"d.m.Y H:i" }}</td>
+                            <td class="text-truncate" style="max-width: 220px;">{{ record.last_path|default:"—" }}</td>
+                            <td>
+                                {% if record.last_download_at %}
+                                    {{ record.last_download_at|date:"d.m.Y H:i" }}<br>
+                                    <span class="text-muted small">{{ record.last_download_path|default:"—" }}</span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">Записей не найдено.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "panel/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "panel/panel_base.html" %}
+
+{% block panel_content %}
+<div class="alert alert-secondary">
+    <h2 class="h5">Страница не найдена</h2>
+    <p class="mb-0">Проверьте адрес или вернитесь на <a href="{% url 'panel:dashboard' %}">dashboard</a>.</p>
+</div>
+{% endblock %}

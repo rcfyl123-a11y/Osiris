@@ -1,0 +1,100 @@
+{% extends "panel/panel_base.html" %}
+
+{% block panel_content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <h2 class="h5 mb-0">Dashboard</h2>
+    <form method="get" class="d-flex gap-2">
+        <label class="visually-hidden" for="period">Период</label>
+        <select id="period" name="period" class="form-select form-select-sm">
+            <option value="24h" {% if period.key == '24h' %}selected{% endif %}>Последние 24 часа</option>
+            <option value="7d" {% if period.key == '7d' %}selected{% endif %}>Последние 7 дней</option>
+        </select>
+        <button class="btn btn-sm btn-primary" type="submit">Показать</button>
+    </form>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="panel-metric">
+            <div class="text-muted small">Уникальные IP ({{ period.label }})</div>
+            <div class="display-6">{{ unique_ips }}</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="panel-metric">
+            <div class="text-muted small">Блокировки ({{ period.label }})</div>
+            <div class="display-6">{{ denied_count }}</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="panel-metric">
+            <div class="text-muted small">Топ IP по блокировкам</div>
+            <ul class="list-unstyled mb-0">
+                {% for row in top_denied %}
+                    <li class="d-flex justify-content-between">
+                        <span>{{ row.ip_address }}</span>
+                        <span class="fw-semibold">{{ row.total }}</span>
+                    </li>
+                {% empty %}
+                    <li class="text-muted">Нет данных</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="panel-metric">
+            <div class="text-muted small">Блокировки по дням (7 дней)</div>
+            <ul class="list-unstyled mb-0">
+                {% for row in denied_by_day %}
+                    <li class="d-flex justify-content-between">
+                        <span>{{ row.day|date:"d.m" }}</span>
+                        <span class="fw-semibold">{{ row.total }}</span>
+                    </li>
+                {% empty %}
+                    <li class="text-muted">Нет данных</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">Последние события</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0 panel-table">
+                <thead>
+                    <tr>
+                        <th>Время</th>
+                        <th>Тип</th>
+                        <th>IP</th>
+                        <th>Пользователь</th>
+                        <th>Путь</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in recent_events %}
+                        <tr>
+                            <td>{{ event.timestamp|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                {% if event.type == "download" %}
+                                    <span class="badge bg-success">Download</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Denied</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ event.ip_address }}</td>
+                            <td>{{ event.username|default:"—" }}</td>
+                            <td class="text-truncate" style="max-width: 240px;">{{ event.path|default:"—" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">События пока не зарегистрированы.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
