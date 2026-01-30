@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Голосования{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Голосования</h1>
+</div>
+
+{% if polls %}
+    <div class="row g-3">
+        {% for poll in polls %}
+            <div class="col-12 col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h2 class="h5 mb-2">
+                                <a href="{% url 'polls:poll_detail' poll.slug %}" class="text-decoration-none">{{ poll.title }}</a>
+                            </h2>
+                            {% if poll.status == "closed" or poll.status == "archived" %}
+                                <span class="badge bg-secondary">Закрыто</span>
+                            {% elif poll.is_active %}
+                                <span class="badge bg-success">Идёт голосование</span>
+                            {% elif poll.has_started and poll.has_ended %}
+                                <span class="badge bg-secondary">Завершено</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Скоро</span>
+                            {% endif %}
+                        </div>
+                        {% if poll.description %}
+                            <p class="text-muted">{{ poll.description|truncatechars:180 }}</p>
+                        {% endif %}
+                        <div class="small text-muted">
+                            {% if poll.start_at %}
+                                Начало: {{ poll.start_at|date:"d.m.Y H:i" }}
+                            {% endif %}
+                            {% if poll.end_at %}
+                                <span class="ms-3">Окончание: {{ poll.end_at|date:"d.m.Y H:i" }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <a href="{% url 'polls:poll_detail' poll.slug %}" class="btn btn-primary btn-sm">Перейти</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">Нет активных голосований.</div>
+{% endif %}
+{% endblock %}

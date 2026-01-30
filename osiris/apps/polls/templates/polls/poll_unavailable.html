@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="h4 mb-3">{{ poll.title }}</h1>
+        <p class="mb-3">{{ status_message }}</p>
+        <div class="d-flex gap-2">
+            <a href="{% url 'polls:poll_list' %}" class="btn btn-outline-secondary">К списку</a>
+            {% if show_results %}
+                <a href="{% url 'polls:poll_results' poll.id %}" class="btn btn-primary">Посмотреть результаты</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Явка — {{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h3">Явка: {{ poll.title }}</h1>
+    <p class="text-muted">Проголосовали: {{ turnout.voted_count }} / {{ turnout.eligible_count }}</p>
+    <div class="d-flex gap-2">
+        <a href="{% url 'polls:poll_turnout_csv' poll.id %}" class="btn btn-outline-secondary btn-sm">CSV</a>
+        <a href="{% url 'polls:poll_results' poll.id %}" class="btn btn-outline-primary btn-sm">Результаты</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Проголосовали</h2>
+                <ul class="list-group list-group-flush">
+                    {% for workplace in turnout.voted_workplaces %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ workplace.ip_address }}</span>
+                            <span class="text-muted">{{ workplace.label }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Нет данных.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Не проголосовали</h2>
+                <ul class="list-group list-group-flush">
+                    {% for workplace in turnout.not_voted_workplaces %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ workplace.ip_address }}</span>
+                            <span class="text-muted">{{ workplace.label }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Нет данных.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load poll_extras %}
+
+{% block title %}{{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h3">{{ poll.title }}</h1>
+    {% if poll.description %}
+        <p class="text-muted">{{ poll.description }}</p>
+    {% endif %}
+</div>
+
+<form method="post" class="card shadow-sm">
+    {% csrf_token %}
+    <div class="card-body">
+        {% if form.full_name %}
+            <div class="mb-4">
+                <label class="form-label fw-semibold" for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                {{ form.full_name }}
+                {% for error in form.full_name.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% for question in questions %}
+            {% with field_name="question_"|add:question.id %}
+            {% with field=form|get_item:field_name %}
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">{{ question.text }}</label>
+                    {% if question.help_text %}
+                        <div class="text-muted small mb-2">{{ question.help_text }}</div>
+                    {% endif %}
+                    {% if question.image %}
+                        <div class="mb-2">
+                            <img src="{{ question.image.url }}" alt="{{ question.text }}" class="img-fluid rounded">
+                        </div>
+                    {% endif %}
+                    {% if question.video_url %}
+                        <div class="mb-2">
+                            <a href="{{ question.video_url }}" target="_blank" rel="noopener">Смотреть видео</a>
+                        </div>
+                    {% endif %}
+                    {% if field %}
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endwith %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+    <div class="card-footer bg-transparent d-flex justify-content-between">
+        <a href="{% url 'polls:poll_list' %}" class="btn btn-outline-secondary">Назад</a>
+        <button type="submit" class="btn btn-primary">Отправить</button>
+    </div>
+</form>
+{% endblock %}
