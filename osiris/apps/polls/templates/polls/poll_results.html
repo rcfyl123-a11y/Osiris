@@ -80,7 +80,7 @@
 
     <div class="card-body">
       {% if block.type == "text" %}
-        {% with answers=text_pages|get_item:block.question.id %}
+        {% with answers=text_pages|get_item:block.question.id page_links=text_page_links|get_item:block.question.id %}
           {% if answers %}
             <ul class="list-group list-group-flush">
               {% for answer in answers %}
@@ -96,7 +96,7 @@
               <ul class="pagination pagination-sm mb-0">
                 {% if answers.has_previous %}
                   <li class="page-item">
-                    <a class="page-link" href="?q{{ block.question.id }}_page={{ answers.previous_page_number }}" aria-label="Назад">
+                    <a class="page-link" href="{{ page_links.prev }}" aria-label="Назад">
                       &laquo;
                     </a>
                   </li>
@@ -110,7 +110,7 @@
 
                 {% if answers.has_next %}
                   <li class="page-item">
-                    <a class="page-link" href="?q{{ block.question.id }}_page={{ answers.next_page_number }}" aria-label="Вперёд">
+                    <a class="page-link" href="{{ page_links.next }}" aria-label="Вперёд">
                       &raquo;
                     </a>
                   </li>

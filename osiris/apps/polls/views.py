@@ -290,6 +290,7 @@ def poll_results(request: HttpRequest, poll_id: int) -> HttpResponse:
 
     result_blocks = []
     text_pages = {}
+    text_page_links = {}
 
     for question in poll.questions.prefetch_related("choices"):
         answers_qs = VoteAnswer.objects.filter(question=question)
@@ -298,7 +299,18 @@ def poll_results(request: HttpRequest, poll_id: int) -> HttpResponse:
         if question.type == Question.QuestionType.TEXT:
             paginator = Paginator(answers_qs.exclude(answer_text=""), 20)
             page_number = request.GET.get(f"q{question.pk}_page", 1)
-            text_pages[question.pk] = paginator.get_page(page_number)
+            answers_page = paginator.get_page(page_number)
+            text_pages[question.pk] = answers_page
+            page_links = {"prev": None, "next": None}
+            if answers_page.has_previous():
+                prev_query = request.GET.copy()
+                prev_query[f"q{question.pk}_page"] = answers_page.previous_page_number()
+                page_links["prev"] = f"?{prev_query.urlencode()}"
+            if answers_page.has_next():
+                next_query = request.GET.copy()
+                next_query[f"q{question.pk}_page"] = answers_page.next_page_number()
+                page_links["next"] = f"?{next_query.urlencode()}"
+            text_page_links[question.pk] = page_links
             result_blocks.append(
                 {
                     "question": question,
@@ -347,6 +359,7 @@ def poll_results(request: HttpRequest, poll_id: int) -> HttpResponse:
             "poll": poll,
             "result_blocks": result_blocks,
             "text_pages": text_pages,
+            "text_page_links": text_page_links,
             "turnout": turnout,
         },
     )
