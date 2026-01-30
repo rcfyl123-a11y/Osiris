@@ -12,5 +12,10 @@ urlpatterns = [
     path("core/denied/", views.PanelDeniedListView.as_view(), name="denied"),
     path("core/status/", views.PanelStatusView.as_view(), name="status"),
     path("core/apps/", views.PanelAppInventoryView.as_view(), name="app_inventory"),
+    path(
+        "core/apps/<int:app_id>/history/",
+        views.PanelAppInventoryHistoryView.as_view(),
+        name="app_inventory_history",
+    ),
     path("core/users/", views.PanelUsersView.as_view(), name="users"),
 ]

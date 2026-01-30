@@ -15,7 +15,7 @@ from django.utils.dateparse import parse_date, parse_datetime
 from django.views.generic import ListView, TemplateView
 
 from osiris.apps.core.app_inventory import audit_app_inventory
-from osiris.apps.core.models import AppInventory, DeniedIPAttempt, UserIPRecord
+from osiris.apps.core.models import AppInventory, AppInventoryHistory, DeniedIPAttempt, UserIPRecord
 
 from .services.audit import record_panel_view
 from .services.dashboard import build_dashboard_context
@@ -377,6 +377,27 @@ class PanelAppInventoryView(PanelAuditMixin, PanelCorePermissionMixin, TemplateV
             {
                 "page_subtitle": "Инвентаризация установленных приложений",
                 "inventory_rows": inventory_rows,
+            }
+        )
+        return context
+
+
+class PanelAppInventoryHistoryView(PanelAuditMixin, PanelCorePermissionMixin, TemplateView):
+    template_name = "panel/core/app_inventory_history.html"
+    audit_action = "core_app_inventory_history"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        entry = get_object_or_404(AppInventory, pk=self.kwargs["app_id"])
+        history_entries = (
+            AppInventoryHistory.objects.filter(app_inventory=entry)
+            .order_by("-changed_at", "-id")
+        )
+        context.update(
+            {
+                "page_subtitle": f"История приложения: {entry.app_label}",
+                "entry": entry,
+                "history_entries": history_entries,
             }
         )
         return context

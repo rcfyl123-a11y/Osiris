@@ -6,7 +6,7 @@ from django.apps import apps as django_apps
 from django.db import transaction
 from django.utils import timezone
 
-from .models import AppInventory
+from .models import AppInventory, AppInventoryHistory
 
 
 @dataclass(frozen=True)
@@ -59,6 +59,49 @@ def _aggregate_hash(file_hashes: dict[str, str]) -> str:
     return hasher.hexdigest()
 
 
+def _diff_file_hashes(old_hashes: dict[str, str], new_hashes: dict[str, str]) -> list[dict[str, str | None]]:
+    changes: list[dict[str, str | None]] = []
+    all_paths = set(old_hashes) | set(new_hashes)
+    for path in sorted(all_paths):
+        old_hash = old_hashes.get(path)
+        new_hash = new_hashes.get(path)
+        if old_hash is None and new_hash is not None:
+            changes.append(
+                {
+                    "path": path,
+                    "change": "added",
+                    "old_hash": None,
+                    "new_hash": new_hash,
+                }
+            )
+        elif old_hash is not None and new_hash is None:
+            changes.append(
+                {
+                    "path": path,
+                    "change": "removed",
+                    "old_hash": old_hash,
+                    "new_hash": None,
+                }
+            )
+        elif old_hash != new_hash:
+            changes.append(
+                {
+                    "path": path,
+                    "change": "modified",
+                    "old_hash": old_hash,
+                    "new_hash": new_hash,
+                }
+            )
+    return changes
+
+
+def _summarize_changes(changes: list[dict[str, str | None]]) -> str:
+    added = sum(1 for change in changes if change["change"] == "added")
+    removed = sum(1 for change in changes if change["change"] == "removed")
+    modified = sum(1 for change in changes if change["change"] == "modified")
+    return f"Изменения файлов: +{added} / ~{modified} / -{removed}."
+
+
 def audit_app_inventory() -> list[AppInventoryChange]:
     changes: list[AppInventoryChange] = []
     now = timezone.now()
@@ -84,6 +127,13 @@ def audit_app_inventory() -> list[AppInventoryChange]:
                     last_changed_at=now,
                 )
                 entry.save()
+                AppInventoryHistory.objects.create(
+                    app_inventory=entry,
+                    status=AppInventoryHistory.Status.NEW,
+                    summary="Обнаружено новое приложение.",
+                    changed_files=_diff_file_hashes({}, file_hashes),
+                    changed_at=now,
+                )
                 changes.append(
                     AppInventoryChange(
                         app_name=app_name,
@@ -95,7 +145,17 @@ def audit_app_inventory() -> list[AppInventoryChange]:
                 continue
 
             status = "unchanged"
+            was_missing = entry.missing_since is not None
             if entry.aggregate_hash != aggregate_hash:
+                file_changes = _diff_file_hashes(entry.file_hashes, file_hashes)
+                summary = _summarize_changes(file_changes) if file_changes else "Изменены файлы приложения."
+                AppInventoryHistory.objects.create(
+                    app_inventory=entry,
+                    status=AppInventoryHistory.Status.CHANGED,
+                    summary=summary,
+                    changed_files=file_changes,
+                    changed_at=now,
+                )
                 status = "changed"
                 entry.last_changed_at = now
                 changes.append(
@@ -114,6 +174,15 @@ def audit_app_inventory() -> list[AppInventoryChange]:
             entry.missing_since = None
             entry.save()
 
+            if was_missing:
+                AppInventoryHistory.objects.create(
+                    app_inventory=entry,
+                    status=AppInventoryHistory.Status.RESTORED,
+                    summary="Приложение снова обнаружено в конфигурации.",
+                    changed_files=[],
+                    changed_at=now,
+                )
+
             if status == "unchanged":
                 changes.append(
                     AppInventoryChange(
@@ -130,6 +199,13 @@ def audit_app_inventory() -> list[AppInventoryChange]:
             if entry.missing_since is None:
                 entry.missing_since = now
                 entry.save(update_fields=["missing_since"])
+                AppInventoryHistory.objects.create(
+                    app_inventory=entry,
+                    status=AppInventoryHistory.Status.MISSING,
+                    summary="Приложение отсутствует в текущей конфигурации.",
+                    changed_files=[],
+                    changed_at=now,
+                )
             changes.append(
                 AppInventoryChange(
                     app_name=entry.app_name,

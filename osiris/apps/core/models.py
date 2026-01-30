@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class SecurityEvent(models.Model):
@@ -165,3 +166,33 @@ class AppInventory(models.Model):
 
     def __str__(self) -> str:
         return f"{self.app_label} ({self.app_name})"
+
+
+class AppInventoryHistory(models.Model):
+    class Status(models.TextChoices):
+        NEW = "new", "Новое"
+        CHANGED = "changed", "Изменено"
+        MISSING = "missing", "Отсутствует"
+        RESTORED = "restored", "Восстановлено"
+
+    app_inventory = models.ForeignKey(
+        AppInventory,
+        on_delete=models.CASCADE,
+        related_name="history",
+        verbose_name="Инвентаризация приложения",
+    )
+    status = models.CharField(max_length=20, choices=Status.choices, verbose_name="Статус")
+    summary = models.CharField(max_length=255, verbose_name="Описание")
+    changed_files = models.JSONField(default=list, verbose_name="Изменённые файлы")
+    changed_at = models.DateTimeField(default=timezone.now, verbose_name="Время изменения")
+
+    class Meta:
+        verbose_name = "История приложения"
+        verbose_name_plural = "История приложений"
+        indexes = [
+            models.Index(fields=["changed_at"], name="core_app_hist_changed_idx"),
+            models.Index(fields=["status"], name="core_app_hist_status_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.app_inventory.app_label}: {self.status} @ {self.changed_at:%Y-%m-%d %H:%M}"

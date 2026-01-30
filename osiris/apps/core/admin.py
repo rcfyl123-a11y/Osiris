@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AppInventory, DeniedIPAttempt, SecurityEvent, UserIPRecord, Workstation
+from .models import AppInventory, AppInventoryHistory, DeniedIPAttempt, SecurityEvent, UserIPRecord, Workstation
 
 
 @admin.register(UserIPRecord)
@@ -45,3 +45,10 @@ class AppInventoryAdmin(admin.ModelAdmin):
     list_display = ("app_label", "app_name", "aggregate_hash", "last_seen_at", "missing_since")
     list_filter = ("missing_since", "last_seen_at")
     search_fields = ("app_label", "app_name", "app_path")
+
+
+@admin.register(AppInventoryHistory)
+class AppInventoryHistoryAdmin(admin.ModelAdmin):
+    list_display = ("app_inventory", "status", "changed_at", "summary")
+    list_filter = ("status", "changed_at")
+    search_fields = ("app_inventory__app_label", "app_inventory__app_name", "summary")

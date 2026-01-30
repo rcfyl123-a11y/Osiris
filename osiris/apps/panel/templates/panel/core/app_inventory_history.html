@@ -1,0 +1,73 @@
+{% extends "panel/panel_base.html" %}
+
+{% block panel_content %}
+    <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
+        <div>
+            <h2 class="h4 mb-1">История приложения</h2>
+            <p class="text-muted mb-0">
+                {{ entry.app_label }} <span class="text-muted small">({{ entry.app_name }})</span>
+            </p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{% url 'panel:app_inventory' %}">
+            Назад к инвентарю
+        </a>
+    </div>
+
+    {% if history_entries %}
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0 panel-table">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Статус</th>
+                                <th>Описание</th>
+                                <th>Файлы</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for history_entry in history_entries %}
+                                <tr>
+                                    <td class="text-muted small">
+                                        {{ history_entry.changed_at|date:"Y-m-d H:i" }}
+                                    </td>
+                                    <td>
+                                        {% if history_entry.status == "missing" %}
+                                            <span class="badge bg-danger">Отсутствует</span>
+                                        {% elif history_entry.status == "changed" %}
+                                            <span class="badge bg-warning text-dark">Изменено</span>
+                                        {% elif history_entry.status == "restored" %}
+                                            <span class="badge bg-info text-dark">Восстановлено</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Новое</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ history_entry.summary }}</td>
+                                    <td class="text-muted small">
+                                        {% if history_entry.changed_files %}
+                                            <ul class="mb-0 ps-3">
+                                                {% for file in history_entry.changed_files %}
+                                                    <li>
+                                                        <span class="fw-semibold">{{ file.path }}</span>
+                                                        <span class="text-muted">({{ file.change }})</span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info mb-0">
+            История изменений пока не зафиксирована.
+        </div>
+    {% endif %}
+{% endblock %}
