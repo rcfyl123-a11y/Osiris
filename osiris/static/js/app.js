@@ -14,6 +14,7 @@
     };
 
     const root = document.documentElement;
+    root.classList.add('js-enabled');
 
     /**
      * Применяет выбранную тему к документу
