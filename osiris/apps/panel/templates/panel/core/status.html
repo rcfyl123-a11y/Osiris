@@ -1,0 +1,29 @@
+{% extends "panel/panel_base.html" %}
+
+{% block panel_content %}
+<h2 class="h5 mb-3">Настройки/состояние</h2>
+
+{% if warnings %}
+    <div class="alert alert-warning">
+        <h3 class="h6">Предупреждения</h3>
+        <ul class="mb-0">
+            {% for warning in warnings %}
+                <li>{{ warning }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% else %}
+    <div class="alert alert-success">Критичных предупреждений нет.</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-0">
+            {% for item in status_items %}
+                <dt class="col-sm-4 text-muted">{{ item.label }}</dt>
+                <dd class="col-sm-8">{{ item.value }}</dd>
+            {% endfor %}
+        </dl>
+    </div>
+</div>
+{% endblock %}
