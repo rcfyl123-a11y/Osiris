@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
@@ -97,6 +98,8 @@ def poll_detail(request: HttpRequest, slug_or_id: str) -> HttpResponse:
             status=403,
         )
 
+    questions = poll.questions.all().order_by("order", "id").prefetch_related("choices")
+
     if request.method == "POST":
         form = PollVoteForm(request.POST, poll=poll)
         if form.is_valid():
@@ -118,6 +121,15 @@ def poll_detail(request: HttpRequest, slug_or_id: str) -> HttpResponse:
     else:
         form = PollVoteForm(poll=poll)
 
+    question_blocks = []
+    for question in questions:
+        field_name = f"question_{question.pk}"
+        try:
+            field = form[field_name]
+        except KeyError:
+            field = None
+        question_blocks.append({"question": question, "field": field})
+
     return render(
         request,
         "polls/poll_detail.html",
@@ -125,7 +137,9 @@ def poll_detail(request: HttpRequest, slug_or_id: str) -> HttpResponse:
             "poll": poll,
             "form": form,
             "workplace": workplace,
-            "questions": poll.questions.prefetch_related("choices"),
+            "questions": questions,
+            "question_blocks": question_blocks,
+            "show_missing_fields": settings.DEBUG or request.user.is_staff,
         },
     )
 

@@ -18,7 +18,7 @@ class PollVoteForm(forms.Form):
                 widget=forms.TextInput(attrs={"class": "form-control"}),
             )
 
-        questions = poll.questions.prefetch_related("choices")
+        questions = poll.questions.all().order_by("order", "id").prefetch_related("choices")
         for question in questions:
             field_name = f"question_{question.pk}"
             common_kwargs = {

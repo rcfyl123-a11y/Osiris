@@ -1,6 +1,4 @@
 {% extends "base.html" %}
-{% load poll_extras %}
-
 {% block title %}{{ poll.title }}{% endblock %}
 
 {% block content %}
@@ -24,41 +22,44 @@
             </div>
         {% endif %}
 
-        {% for question in questions %}
-            {% with field_name="question_"|add:question.id %}
-            {% with field=form|get_item:field_name %}
-                <div class="border rounded p-3 mb-4">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <label class="form-label fw-semibold mb-1">
-                            Вопрос {{ forloop.counter }}. {{ question.text }}
-                        </label>
-                        {% if question.required %}
-                            <span class="badge bg-primary">Обязательный</span>
-                        {% endif %}
-                    </div>
-                    {% if question.help_text %}
-                        <div class="text-muted small mb-2">{{ question.help_text }}</div>
-                    {% endif %}
-                    {% if question.image %}
-                        <div class="mb-2">
-                            <img src="{{ question.image.url }}" alt="{{ question.text }}" class="img-fluid rounded">
-                        </div>
-                    {% endif %}
-                    {% if question.video_url %}
-                        <div class="mb-2">
-                            <a href="{{ question.video_url }}" target="_blank" rel="noopener">Смотреть видео</a>
-                        </div>
-                    {% endif %}
-                    {% if field %}
-                        <div class="mt-2">
-                            {{ field }}
-                        </div>
-                        {% for error in field.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+        {% for block in question_blocks %}
+            {% with question=block.question field=block.field %}
+            <div class="border rounded p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <label class="form-label fw-semibold mb-1">
+                        Вопрос {{ forloop.counter }}. {{ question.text }}
+                    </label>
+                    {% if question.required %}
+                        <span class="badge bg-primary">Обязательный</span>
                     {% endif %}
                 </div>
-            {% endwith %}
+                {% if question.help_text %}
+                    <div class="text-muted small mb-2">{{ question.help_text }}</div>
+                {% endif %}
+                {% if question.image %}
+                    <div class="mb-2">
+                        <img src="{{ question.image.url }}" alt="{{ question.text }}" class="img-fluid rounded">
+                    </div>
+                {% endif %}
+                {% if question.video_url %}
+                    <div class="mb-2">
+                        <a href="{{ question.video_url }}" target="_blank" rel="noopener">Смотреть видео</a>
+                    </div>
+                {% endif %}
+                {% if field %}
+                    <div class="mt-2">
+                        {{ field }}
+                    </div>
+                    {% for error in field.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                {% elif show_missing_fields %}
+                    <div class="alert alert-warning mt-2 mb-0" role="alert">
+                        Не удалось отобразить поле ответа для вопроса ID {{ question.pk }}.
+                        Проверьте, что форма и шаблон используют одинаковые ключи.
+                    </div>
+                {% endif %}
+            </div>
             {% endwith %}
         {% endfor %}
     </div>
