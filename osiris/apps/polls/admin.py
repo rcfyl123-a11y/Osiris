@@ -1,17 +1,74 @@
+from django import forms
 from django.contrib import admin
+from django.core.exceptions import ValidationError
+from django.forms import BaseInlineFormSet
 from django.utils import timezone
 
 from .models import Choice, Poll, Question, Vote, VoteAnswer, Workplace
 
 
+class PollAdminForm(forms.ModelForm):
+    class Meta:
+        model = Poll
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not cleaned_data.get("audience_all") and not cleaned_data.get("audience_workplaces"):
+            raise ValidationError(
+                {"audience_workplaces": "Укажите аудиторию, если голосование не для всех."}
+            )
+        return cleaned_data
+
+
+class ChoiceInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        question_type = getattr(self.instance, "type", None)
+        if not question_type:
+            return
+        active_forms = [
+            form
+            for form in self.forms
+            if getattr(form, "cleaned_data", None) and not form.cleaned_data.get("DELETE", False)
+        ]
+        choice_count = len(active_forms)
+        if question_type == Question.QuestionType.TEXT:
+            if choice_count:
+                raise ValidationError("Для текстового вопроса не нужно добавлять варианты ответа.")
+            return
+        if question_type in {
+            Question.QuestionType.SINGLE_CHOICE,
+            Question.QuestionType.MULTI_CHOICE,
+            Question.QuestionType.SELECT,
+        } and choice_count < 2:
+            raise ValidationError("Добавьте минимум два варианта ответа.")
+
+
+class QuestionInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        active_forms = [
+            form
+            for form in self.forms
+            if getattr(form, "cleaned_data", None) and not form.cleaned_data.get("DELETE", False)
+        ]
+        if not active_forms:
+            raise ValidationError("Добавьте хотя бы один вопрос.")
+
+
 class ChoiceInline(admin.TabularInline):
     model = Choice
     extra = 1
+    formset = ChoiceInlineFormSet
+    fields = ("text", "order")
 
 
 class QuestionInline(admin.TabularInline):
     model = Question
     extra = 1
+    formset = QuestionInlineFormSet
+    fields = ("text", "type", "required", "order")
 
 
 @admin.register(Workplace)
@@ -23,6 +80,7 @@ class WorkplaceAdmin(admin.ModelAdmin):
 
 @admin.register(Poll)
 class PollAdmin(admin.ModelAdmin):
+    form = PollAdminForm
     list_display = (
         "title",
         "status",
