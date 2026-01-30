@@ -14,14 +14,38 @@ from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import PollVoteForm
+from .forms import PollCreateForm, PollVoteForm
 from .models import Poll, Question, Vote, VoteAnswer, Workplace
 from .utils import get_client_ip
+
+
+POLL_RESULT_COLORS = [
+    "polls-color-emerald",
+    "polls-color-blue",
+    "polls-color-violet",
+    "polls-color-amber",
+    "polls-color-rose",
+    "polls-color-teal",
+]
 
 
 def poll_list(request: HttpRequest) -> HttpResponse:
     polls = Poll.objects.exclude(status=Poll.Status.DRAFT).order_by("-start_at", "-created_at")
     return render(request, "polls/poll_list.html", {"polls": polls, "now": timezone.now()})
+
+
+@staff_member_required
+def poll_create(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        form = PollCreateForm(request.POST)
+        if form.is_valid():
+            poll = form.save()
+            messages.success(request, "Голосование создано. Добавьте вопросы через админ-панель.")
+            return redirect("polls:poll_list")
+    else:
+        form = PollCreateForm()
+
+    return render(request, "polls/poll_create.html", {"form": form})
 
 
 def _get_poll(slug_or_id: str) -> Poll:
@@ -226,10 +250,18 @@ def poll_results(request: HttpRequest, poll_id: int) -> HttpResponse:
         count_map = {item["choice"]: item["total"] for item in choice_counts}
 
         choices_data = []
-        for choice in question.choices.all():
+        for idx, choice in enumerate(question.choices.all()):
             count = count_map.get(choice.pk, 0)
             percent = (count / total_votes * 100) if total_votes else 0
-            choices_data.append({"choice": choice, "count": count, "percent": percent})
+            color_class = POLL_RESULT_COLORS[idx % len(POLL_RESULT_COLORS)]
+            choices_data.append(
+                {
+                    "choice": choice,
+                    "count": count,
+                    "percent": percent,
+                    "color_class": color_class,
+                }
+            )
 
         result_blocks.append(
             {

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Создать голосование{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1">Создать голосование</h1>
+                <p class="text-muted mb-0">Заполните основные параметры, вопросы добавляются в админ-панели.</p>
+            </div>
+            <a class="btn btn-outline-secondary" href="{% url 'polls:poll_list' %}">К списку</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        {{ form.title.label_tag }}
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small">{{ form.title.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label_tag }}
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small">{{ form.description.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.status.label_tag }}
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small">{{ form.status.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.identity_mode.label_tag }}
+                            {{ form.identity_mode }}
+                            {% if form.identity_mode.errors %}
+                                <div class="text-danger small">{{ form.identity_mode.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.start_at.label_tag }}
+                            {{ form.start_at }}
+                            {% if form.start_at.errors %}
+                                <div class="text-danger small">{{ form.start_at.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.end_at.label_tag }}
+                            {{ form.end_at }}
+                            {% if form.end_at.errors %}
+                                <div class="text-danger small">{{ form.end_at.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.vote_policy.label_tag }}
+                            {{ form.vote_policy }}
+                            {% if form.vote_policy.errors %}
+                                <div class="text-danger small">{{ form.vote_policy.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mt-4">
+                                {{ form.show_results_to_users }}
+                                {{ form.show_results_to_users.label_tag }}
+                            </div>
+                            {% if form.show_results_to_users.errors %}
+                                <div class="text-danger small">{{ form.show_results_to_users.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h2 class="h6">Аудитория</h2>
+                        <div class="form-check mb-2">
+                            {{ form.audience_all }}
+                            {{ form.audience_all.label_tag }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.audience_workplaces.label_tag }}
+                            {{ form.audience_workplaces }}
+                            <div class="form-text">Если не выбрана вся аудитория, укажите рабочие места.</div>
+                            {% if form.audience_workplaces.errors %}
+                                <div class="text-danger small">{{ form.audience_workplaces.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button class="btn btn-primary" type="submit">Создать</button>
+                        <a class="btn btn-outline-secondary" href="{% url 'polls:poll_list' %}">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

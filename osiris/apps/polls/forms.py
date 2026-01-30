@@ -2,7 +2,7 @@
 
 from django import forms
 
-from .models import Choice, Poll, Question
+from .models import Choice, Poll, Question, Workplace
 
 
 class PollVoteForm(forms.Form):
@@ -50,3 +50,49 @@ class PollVoteForm(forms.Form):
                     queryset=Choice.objects.filter(question=question),
                     widget=forms.RadioSelect,
                 )
+
+
+class PollCreateForm(forms.ModelForm):
+    class Meta:
+        model = Poll
+        fields = (
+            "title",
+            "description",
+            "status",
+            "start_at",
+            "end_at",
+            "identity_mode",
+            "vote_policy",
+            "show_results_to_users",
+            "audience_all",
+            "audience_workplaces",
+        )
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+            "status": forms.Select(attrs={"class": "form-select"}),
+            "start_at": forms.DateTimeInput(attrs={"class": "form-control", "type": "datetime-local"}),
+            "end_at": forms.DateTimeInput(attrs={"class": "form-control", "type": "datetime-local"}),
+            "identity_mode": forms.Select(attrs={"class": "form-select"}),
+            "vote_policy": forms.Select(attrs={"class": "form-select"}),
+            "show_results_to_users": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "audience_all": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "audience_workplaces": forms.SelectMultiple(attrs={"class": "form-select", "size": 6}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["audience_workplaces"].queryset = Workplace.objects.filter(is_active=True)
+        self.fields["audience_workplaces"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("audience_all"):
+            cleaned_data["audience_workplaces"] = Workplace.objects.none()
+        return cleaned_data
+
+    def save(self, commit=True):
+        poll = super().save(commit=commit)
+        if poll.audience_all and commit:
+            poll.audience_workplaces.clear()
+        return poll
