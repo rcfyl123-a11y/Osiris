@@ -4,9 +4,12 @@ from datetime import datetime, time, timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import Group
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 from django.views.generic import ListView, TemplateView
@@ -33,6 +36,17 @@ class PanelCorePermissionMixin(PermissionRequiredMixin, PanelStaffRequiredMixin)
     """Ограничение доступа к security-разделам панели."""
 
     permission_required = "panel.core_security_view"
+
+    def handle_no_permission(self) -> HttpResponse:
+        if self.request.user.is_authenticated:
+            return render(self.request, "panel/403.html", status=403)
+        return super().handle_no_permission()
+
+
+class PanelUsersPermissionMixin(PermissionRequiredMixin, PanelStaffRequiredMixin):
+    """Ограничение доступа к управлению пользователями."""
+
+    permission_required = "panel.core_users_manage"
 
     def handle_no_permission(self) -> HttpResponse:
         if self.request.user.is_authenticated:
@@ -166,39 +180,163 @@ class PanelStatusView(PanelAuditMixin, PanelCorePermissionMixin, TemplateView):
         context.update(
             {
                 "status_items": [
-                    {"label": "IP_MODE", "value": ip_mode},
-                    {"label": "IP_ALLOWLIST", "value": ", ".join(allowlist) or "—"},
+                    {
+                        "label": "IP_MODE",
+                        "value": ip_mode,
+                        "description": "Режим работы фильтрации IP (audit/perimeter/bind).",
+                    },
+                    {
+                        "label": "IP_ALLOWLIST",
+                        "value": ", ".join(allowlist) or "—",
+                        "description": "Список разрешённых IP/подсетей для доступа.",
+                    },
                     {
                         "label": "IP_TRUST_X_FORWARDED_FOR",
                         "value": "Да" if trust_xff else "Нет",
+                        "description": "Доверять заголовку X-Forwarded-For от прокси.",
                     },
                     {
                         "label": "IP_TRUSTED_PROXIES",
                         "value": ", ".join(trusted_proxies) or "—",
+                        "description": "Список доверенных прокси, через которые приходит трафик.",
                     },
                     {
                         "label": "IP_FAIL_CLOSED_EMPTY_ALLOWLIST",
                         "value": "Да" if fail_closed else "Нет",
+                        "description": "Блокировать всех при пустом allowlist.",
                     },
                     {
                         "label": "IP_EXEMPT_PATHS",
                         "value": ", ".join(getattr(settings, "IP_EXEMPT_PATHS", []))
                         or "—",
+                        "description": "Маршруты, исключённые из проверки IP.",
                     },
                     {
                         "label": "IP_APPLY_TO_STATIC_MEDIA",
                         "value": "Да" if getattr(settings, "IP_APPLY_TO_STATIC_MEDIA", True) else "Нет",
+                        "description": "Применять фильтрацию к статике и медиа.",
                     },
                     {
                         "label": "IP_RECORD_THROTTLE_SECONDS",
                         "value": getattr(settings, "IP_RECORD_THROTTLE_SECONDS", 60),
+                        "description": "Пауза между фиксацией повторных IP-событий.",
                     },
                     {
                         "label": "IP_BIND_ENFORCE",
                         "value": "Да" if getattr(settings, "IP_BIND_ENFORCE", True) else "Нет",
+                        "description": "Жёстко привязывать пользователя к IP.",
                     },
                 ],
                 "warnings": warnings,
+            }
+        )
+        return context
+
+
+class PanelUsersView(PanelAuditMixin, PanelUsersPermissionMixin, TemplateView):
+    template_name = "panel/core/users.html"
+    audit_action = "core_users"
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        action = request.POST.get("action")
+        User = get_user_model()
+
+        if action == "create":
+            username = (request.POST.get("username") or "").strip()
+            email = (request.POST.get("email") or "").strip()
+            password = (request.POST.get("password") or "").strip()
+            role = request.POST.get("role", "user")
+            group_ids = request.POST.getlist("groups")
+
+            if not username or not password:
+                messages.error(request, "Укажите имя пользователя и пароль.")
+                return redirect("panel:users")
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Пользователь с таким именем уже существует.")
+                return redirect("panel:users")
+
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.is_staff = role in {"staff", "superuser"}
+            user.is_superuser = role == "superuser"
+            user.save(update_fields=["is_staff", "is_superuser"])
+            if group_ids:
+                groups = Group.objects.filter(id__in=group_ids)
+                user.groups.set(groups)
+            messages.success(request, "Пользователь создан.")
+            return redirect("panel:users")
+
+        user_id = request.POST.get("user_id")
+        if not user_id:
+            messages.error(request, "Не указан пользователь для действия.")
+            return redirect("panel:users")
+
+        target_user = get_object_or_404(User, pk=user_id)
+
+        if action == "delete":
+            if target_user == request.user:
+                messages.error(request, "Нельзя удалить собственный аккаунт.")
+            else:
+                target_user.delete()
+                messages.success(request, "Пользователь удалён.")
+            return redirect("panel:users")
+
+        if action == "toggle_active":
+            if target_user == request.user:
+                messages.error(request, "Нельзя деактивировать собственный аккаунт.")
+            else:
+                target_user.is_active = not target_user.is_active
+                target_user.save(update_fields=["is_active"])
+                messages.success(request, "Статус активности обновлён.")
+            return redirect("panel:users")
+
+        if action == "set_staff":
+            target_user.is_staff = True
+            target_user.save(update_fields=["is_staff"])
+            messages.success(request, "Роль staff назначена.")
+            return redirect("panel:users")
+
+        if action == "unset_staff":
+            if target_user == request.user and target_user.is_superuser:
+                messages.error(request, "Нельзя убрать staff у собственного суперпользователя.")
+            else:
+                target_user.is_staff = False
+                target_user.save(update_fields=["is_staff"])
+                messages.success(request, "Роль staff снята.")
+            return redirect("panel:users")
+
+        if action == "set_superuser":
+            target_user.is_superuser = True
+            target_user.is_staff = True
+            target_user.save(update_fields=["is_superuser", "is_staff"])
+            messages.success(request, "Назначен суперпользователь.")
+            return redirect("panel:users")
+
+        if action == "unset_superuser":
+            if target_user == request.user:
+                messages.error(request, "Нельзя снять суперпользователя у себя.")
+            else:
+                target_user.is_superuser = False
+                target_user.save(update_fields=["is_superuser"])
+                messages.success(request, "Суперпользователь снят.")
+            return redirect("panel:users")
+
+        if action == "update_groups":
+            group_ids = request.POST.getlist("groups")
+            groups = Group.objects.filter(id__in=group_ids)
+            target_user.groups.set(groups)
+            messages.success(request, "Роли (группы) обновлены.")
+            return redirect("panel:users")
+
+        messages.error(request, "Неизвестное действие.")
+        return redirect("panel:users")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        User = get_user_model()
+        context.update(
+            {
+                "users": User.objects.prefetch_related("groups").order_by("username"),
+                "groups": Group.objects.order_by("name"),
             }
         )
         return context

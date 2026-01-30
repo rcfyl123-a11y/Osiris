@@ -21,7 +21,12 @@
         <dl class="row mb-0">
             {% for item in status_items %}
                 <dt class="col-sm-4 text-muted">{{ item.label }}</dt>
-                <dd class="col-sm-8">{{ item.value }}</dd>
+                <dd class="col-sm-8">
+                    <div>{{ item.value }}</div>
+                    {% if item.description %}
+                        <div class="text-muted small">{{ item.description }}</div>
+                    {% endif %}
+                </dd>
             {% endfor %}
         </dl>
     </div>

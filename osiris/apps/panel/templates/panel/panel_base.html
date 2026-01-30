@@ -45,6 +45,12 @@
                 {% else %}
                     <div class="list-group-item text-muted">Нет доступа к Core Security</div>
                 {% endif %}
+                {% if perms.panel.core_users_manage %}
+                    <a href="{% url 'panel:users' %}"
+                       class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'users' %}active{% endif %}">
+                        Управление пользователями
+                    </a>
+                {% endif %}
             </div>
         </aside>
         <section class="col-12 col-lg-9 col-xl-10">
