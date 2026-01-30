@@ -1,63 +1,123 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Ответы по людям — {{ poll.title }}{% endblock %}
 
+{% block css %}
+  <link href="{% static 'css/polls.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="mb-4">
-    <h1 class="h3">Ответы по людям: {{ poll.title }}</h1>
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-        <a href="{% url 'polls:poll_results' poll.id %}" class="btn btn-outline-secondary btn-sm">К общим результатам</a>
-        <a href="{% url 'polls:poll_results_people_csv' poll.id %}" class="btn btn-outline-secondary btn-sm">CSV</a>
-        <a href="{% url 'polls:poll_results_people_xlsx' poll.id %}" class="btn btn-outline-secondary btn-sm">XLSX</a>
-        <a href="{% url 'polls:poll_results_people_xls' poll.id %}" class="btn btn-outline-secondary btn-sm">XLS</a>
+<div class="card shadow-sm mb-4 polls-page-header">
+  <div class="card-body">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+      <div class="min-w-0">
+        <h1 class="h4 mb-1 text-truncate">Ответы по людям: {{ poll.title }}</h1>
+        <div class="text-muted small">Поиск по ФИО, IP и рабочему месту.</div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 align-items-start justify-content-lg-end">
+        <a href="{% url 'polls:poll_results' poll.id %}" class="btn btn-outline-secondary btn-sm">
+          К общим результатам
+        </a>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+            Экспорт
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'polls:poll_results_people_csv' poll.id %}">CSV</a></li>
+            <li><a class="dropdown-item" href="{% url 'polls:poll_results_people_xlsx' poll.id %}">XLSX</a></li>
+            <li><a class="dropdown-item" href="{% url 'polls:poll_results_people_xls' poll.id %}">XLS</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-6">
-        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Поиск по ФИО, IP или рабочему месту">
+<form method="get" class="card shadow-sm mb-3">
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-lg-8">
+        <label class="form-label small text-muted mb-1">Поиск</label>
+        <div class="input-group">
+          <span class="input-group-text">🔎</span>
+          <input type="text" name="q" value="{{ query }}" class="form-control"
+                 placeholder="Например: Иванов, 10.0.0.12, Бухгалтерия, ПК-123">
+        </div>
+      </div>
+      <div class="col-lg-4 d-flex gap-2">
+        <button class="btn btn-primary w-100" type="submit">Найти</button>
+        <a class="btn btn-outline-secondary w-100" href="{% url 'polls:poll_results_people' poll.id %}">
+          Сбросить
+        </a>
+      </div>
     </div>
-    <div class="col-md-3">
-        <button class="btn btn-primary" type="submit">Найти</button>
-        <a class="btn btn-outline-secondary" href="{% url 'polls:poll_results_people' poll.id %}">Сбросить</a>
-    </div>
+  </div>
 </form>
 
 {% if votes %}
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>ФИО</th>
-                    <th>IP</th>
-                    <th>Рабочее место</th>
-                    <th>Дата</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for vote in votes %}
-                    <tr>
-                        <td>{{ vote.full_name|default:"—" }}</td>
-                        <td>{{ vote.voter_ip }}</td>
-                        <td>
-                            {{ vote.workplace.label|default:"—" }}
-                            {% if vote.workplace.department %}
-                                <div class="text-muted small">{{ vote.workplace.department }}</div>
-                            {% endif %}
-                        </td>
-                        <td>{{ vote.created_at|date:"d.m.Y H:i" }}</td>
-                        <td class="text-end">
-                            <a class="btn btn-sm btn-outline-primary" href="{% url 'polls:poll_results_person' poll.id vote.id %}">
-                                Ответы
-                            </a>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 polls-table">
+          <thead class="table-light">
+            <tr>
+              <th>ФИО</th>
+              <th>IP</th>
+              <th>Рабочее место</th>
+              <th class="text-nowrap">Дата</th>
+              <th class="text-end"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vote in votes %}
+              <tr>
+                <td class="min-w-0">
+                  {% if vote.full_name %}
+                    <div class="fw-semibold text-break">{{ vote.full_name }}</div>
+                  {% else %}
+                    <span class="badge text-bg-light text-muted">Без ФИО</span>
+                  {% endif %}
+                </td>
+
+                <td class="text-nowrap">
+                  <code class="text-body-secondary">{{ vote.voter_ip }}</code>
+                </td>
+
+                <td class="min-w-0">
+                  <div class="fw-semibold text-break">{{ vote.workplace.label|default:"—" }}</div>
+                  {% if vote.workplace.department %}
+                    <div class="text-muted small text-break">{{ vote.workplace.department }}</div>
+                  {% endif %}
+                </td>
+
+                <td class="text-nowrap">
+                  <div class="fw-semibold">{{ vote.created_at|date:"d.m.Y" }}</div>
+                  <div class="text-muted small">{{ vote.created_at|date:"H:i" }}</div>
+                </td>
+
+                <td class="text-end">
+                  <a class="btn btn-sm btn-outline-primary"
+                     href="{% url 'polls:poll_results_person' poll.id vote.id %}">
+                    Ответы
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
         </table>
+      </div>
     </div>
+  </div>
 {% else %}
-    <div class="alert alert-info">Голосов пока нет.</div>
+  <div class="card border-0 bg-light">
+    <div class="card-body">
+      <div class="fw-semibold mb-1">Голосов пока нет</div>
+      <div class="text-muted">Когда появятся ответы, они будут отображаться здесь.</div>
+    </div>
+  </div>
 {% endif %}
 {% endblock %}

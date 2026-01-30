@@ -1,50 +1,87 @@
 {% extends "base.html" %}
 {% load poll_extras %}
+{% load static %}
 
 {% block title %}Ответы — {{ poll.title }}{% endblock %}
 
+{% block css %}
+  <link href="{% static 'css/polls.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="mb-4">
-    <h1 class="h3">Ответы участника</h1>
-    <div class="text-muted">
-        {{ vote.full_name|default:"Без ФИО" }} · {{ vote.voter_ip }}
-    </div>
-    <div class="text-muted small">
-        {{ vote.created_at|date:"d.m.Y H:i" }}
-        {% if vote.workplace %}
+<div class="card shadow-sm mb-4 polls-page-header">
+  <div class="card-body">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+      <div class="min-w-0">
+        <h1 class="h4 mb-1 text-truncate">Ответы участника</h1>
+
+        <div class="text-muted">
+          {% if vote.full_name %}
+            <span class="fw-semibold">{{ vote.full_name }}</span>
+          {% else %}
+            <span class="badge text-bg-light text-muted">Без ФИО</span>
+          {% endif %}
+          · <code class="text-body-secondary">{{ vote.voter_ip }}</code>
+        </div>
+
+        <div class="text-muted small mt-1">
+          {{ vote.created_at|date:"d.m.Y H:i" }}
+          {% if vote.workplace %}
             · {{ vote.workplace.label }}{% if vote.workplace.department %} ({{ vote.workplace.department }}){% endif %}
-        {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 align-items-start justify-content-lg-end">
+        <a href="{% url 'polls:poll_results_people' poll.id %}" class="btn btn-outline-secondary btn-sm">
+          Назад
+        </a>
+      </div>
     </div>
-    <div class="mt-2">
-        <a href="{% url 'polls:poll_results_people' poll.id %}" class="btn btn-outline-secondary btn-sm">Назад</a>
-    </div>
+  </div>
 </div>
 
 {% for question in questions %}
-    <div class="card shadow-sm mb-3">
-        <div class="card-body">
-            <h2 class="h6 mb-1">{{ question.text }}</h2>
-            {% if question.help_text %}
-                <p class="text-muted small">{{ question.help_text }}</p>
-            {% endif %}
-            {% with answers=answers_map|get_item:question.id %}
-                {% if answers %}
-                    <ul class="list-group list-group-flush">
-                        {% for answer in answers %}
-                            <li class="list-group-item">
-                                {% if question.type == "text" %}
-                                    {{ answer.answer_text }}
-                                {% elif answer.choice %}
-                                    {{ answer.choice.text }}
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <div class="text-muted">Нет ответа.</div>
-                {% endif %}
-            {% endwith %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-header bg-white">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="min-w-0">
+          <div class="fw-semibold text-break">
+            <span class="text-muted me-1">{{ forloop.counter }}.</span>{{ question.text }}
+          </div>
+          {% if question.help_text %}
+            <div class="text-muted small mt-1">{{ question.help_text }}</div>
+          {% endif %}
         </div>
+        <div class="flex-shrink-0">
+          {% if question.type == "text" %}
+            <span class="badge text-bg-secondary">Текст</span>
+          {% else %}
+            <span class="badge text-bg-secondary">Выбор</span>
+          {% endif %}
+        </div>
+      </div>
     </div>
+
+    <div class="card-body">
+      {% with answers=answers_map|get_item:question.id %}
+        {% if answers %}
+          <ul class="list-group list-group-flush list-group-numbered">
+            {% for answer in answers %}
+              <li class="list-group-item polls-answer-item">
+                {% if question.type == "text" %}
+                  <div class="polls-answer-text">{{ answer.answer_text }}</div>
+                {% elif answer.choice %}
+                  <span class="badge text-bg-light text-dark">{{ answer.choice.text }}</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="text-muted">Нет ответа.</div>
+        {% endif %}
+      {% endwith %}
+    </div>
+  </div>
 {% endfor %}
 {% endblock %}
