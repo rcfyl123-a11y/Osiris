@@ -1,4 +1,4 @@
-"""URL routes for RCA views."""
+"""Маршруты URL для представлений RCA."""
 
 from django.urls import path
 

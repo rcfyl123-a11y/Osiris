@@ -1,6 +1,6 @@
-"""Project-level views for Osiris.
+"""Проектные представления для Osiris.
 
-Path: osiris/config/views.py
+Путь: osiris/config/views.py
 """
 
 from django.http import JsonResponse
@@ -9,7 +9,7 @@ from django.utils import timezone
 
 
 def health_check(request):
-    """Return health status as JSON or HTML depending on the request headers."""
+    """Вернуть статус сервиса в JSON или HTML в зависимости от заголовков запроса."""
     payload = {
         "status": "ok",
         "details": {

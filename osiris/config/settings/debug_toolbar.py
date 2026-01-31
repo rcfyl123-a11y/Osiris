@@ -1,13 +1,13 @@
-"""Debug Toolbar configuration for Osiris.
+"""Конфигурация Debug Toolbar для Osiris.
 
-Path: osiris/config/settings/debug_toolbar.py
+Путь: osiris/config/settings/debug_toolbar.py
 """
 
 from .environment import DEBUG
 
 
 def _show_toolbar(request) -> bool:
-    """Return True when the debug toolbar should be visible."""
+    """Возвращает True, когда debug-панель должна отображаться."""
     return DEBUG
 
 DEBUG_TOOLBAR_CONFIG = {

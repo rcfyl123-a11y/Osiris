@@ -1,6 +1,6 @@
-"""Chat feature settings for Osiris.
+"""Настройки функций чата Osiris.
 
-Path: osiris/config/settings/chat.py
+Путь: osiris/config/settings/chat.py
 """
 
 import os

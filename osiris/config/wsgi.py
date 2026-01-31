@@ -1,10 +1,10 @@
 """
-WSGI config for Osiris project.
-Path: osiris/config/wsgi.py
+WSGI-конфигурация проекта Osiris.
+Путь: osiris/config/wsgi.py
 
-It exposes the WSGI callable as a module-level variable named ``application``.
+Экспортирует WSGI-приложение как переменную уровня модуля ``application``.
 
-For more information on this file, see
+Подробнее:
 https://docs.djangoproject.com/en/stable/howto/deployment/wsgi/
 """
 

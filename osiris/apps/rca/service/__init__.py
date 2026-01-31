@@ -1,1 +1,1 @@
-"""RCA services package."""
+"""Пакет сервисов RCA."""

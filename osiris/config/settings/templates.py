@@ -1,6 +1,6 @@
-"""Template and message tag configuration for Osiris.
+"""Конфигурация шаблонов и тегов сообщений для Osiris.
 
-Path: osiris/config/settings/templates.py
+Путь: osiris/config/settings/templates.py
 """
 
 from django.contrib.messages import constants as messages

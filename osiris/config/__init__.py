@@ -1,4 +1,4 @@
-"""Project configuration package.
+"""Пакет конфигурации проекта.
 
-Path: osiris/config/__init__.py
+Путь: osiris/config/__init__.py
 """

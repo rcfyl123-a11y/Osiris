@@ -1,4 +1,4 @@
-"""Views for RCA employee/org/post browsing."""
+"""Представления для просмотра сотрудников/оргструктуры/должностей RCA."""
 
 from __future__ import annotations
 

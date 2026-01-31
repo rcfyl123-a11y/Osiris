@@ -1,6 +1,6 @@
-"""Logging configuration for Osiris using Loguru.
+"""Конфигурация логирования Osiris на базе Loguru.
 
-Path: osiris/config/settings/logging.py
+Путь: osiris/config/settings/logging.py
 """
 
 from __future__ import annotations

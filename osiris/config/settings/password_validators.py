@@ -1,6 +1,6 @@
-"""Password validation settings for Osiris.
+"""Настройки валидаторов паролей для Osiris.
 
-Path: osiris/config/settings/password_validators.py
+Путь: osiris/config/settings/password_validators.py
 """
 
 AUTH_PASSWORD_VALIDATORS = [

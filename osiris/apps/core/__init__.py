@@ -1,1 +1,1 @@
-"""Core application with shared auth and main-page views."""
+"""Базовое приложение с общей аутентификацией и главной страницей."""
