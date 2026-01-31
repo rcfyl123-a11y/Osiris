@@ -16,6 +16,14 @@ Core концентрирует общие доменные сущности, с
 - **DeniedIPAttempt** — попытки доступа с заблокированных IP.
 - **AppInventory** — инвентаризация приложений и их файловых хешей.
 
+## Информация для ChatGPT (быстрая навигация)
+- **URL-ы и сценарии**: базовый префикс `/core/` подключается автоматически. В `osiris/apps/core/urls.py` лежат маршруты регистрации/логина/сброса пароля; корневой `home` объявлен в `osiris/apps/core/views.py`.
+- **Формы** для регистрации и аутентификации находятся в `osiris/apps/core/forms.py` (SignupForm, LoginForm, PasswordResetRequestForm, SetPasswordFormStyled).
+- **IP-контроль и аудит** реализованы в `osiris/apps/core/middleware.py` (IPAllowlistMiddleware, resolve_client_ip) и пишут события/блокировки в модели `SecurityEvent`/`DeniedIPAttempt`.
+- **Инвентаризация приложений** — `osiris/apps/core/app_inventory.py` (хеширование файлов, история изменений).
+- **Шаблоны** core лежат в `osiris/templates/core/` и `osiris/templates/core/registration/`.
+- **Модели** с доменной логикой и аудитом — `osiris/apps/core/models.py`.
+
 ## Возможные варианты улучшения
 - Ввести категории риска и SLA на обработку SecurityEvent.
 - Добавить автоматическое устаревание или архивирование IP-записей.
