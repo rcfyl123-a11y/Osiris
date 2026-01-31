@@ -1,1 +1,1 @@
-"""Osiris main package"""
+"""Основной пакет Osiris."""

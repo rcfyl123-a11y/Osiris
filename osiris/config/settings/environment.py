@@ -1,6 +1,6 @@
-"""Environment and base settings for Osiris.
+"""Базовые настройки и окружение для Osiris.
 
-Path: osiris/config/settings/environment.py
+Путь: osiris/config/settings/environment.py
 """
 
 import os
@@ -82,21 +82,21 @@ except Exception as e:
     log.error(f"Не удалось найти и загрузить .env. Путь: {__NEV}, ошибка: {e}")
 
 def _env_bool(value: str | None) -> bool:
-    """Convert an environment variable string to a boolean."""
+    """Преобразовать строку переменной окружения в булево значение."""
     if value is None:
         return False
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _env_list(value: str | None) -> list[str]:
-    """Split a comma-separated environment variable into a list."""
+    """Разбить строку переменной окружения по запятым в список."""
     if not value:
         return []
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
 def _env_int(value: str | None, default: int) -> int:
-    """Parse an integer environment variable with a default fallback."""
+    """Преобразовать переменную окружения в число с запасным значением."""
     if value is None:
         return default
     try:

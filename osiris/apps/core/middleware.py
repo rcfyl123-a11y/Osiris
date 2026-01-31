@@ -107,10 +107,10 @@ def _extract_forwarded_ip(request) -> str | None:
 
 def resolve_client_ip(request, trusted_proxies: list[ipaddress._BaseNetwork], trust_xff: bool) -> str | None:
     """
-    IP resolution priority:
-    1) REMOTE_ADDR if no trusted proxy match or proxy trust disabled.
-    2) If REMOTE_ADDR belongs to trusted proxies AND trust_xff enabled,
-       use first IP from X-Forwarded-For, otherwise X-Real-IP.
+    Приоритет определения IP-адреса клиента:
+    1) REMOTE_ADDR, если нет совпадения с доверенными прокси или доверие к прокси отключено.
+    2) Если REMOTE_ADDR принадлежит доверенным прокси и trust_xff включен,
+       используем первый IP из X-Forwarded-For, иначе — X-Real-IP.
     """
     remote_addr = request.META.get("REMOTE_ADDR")
     if not remote_addr:

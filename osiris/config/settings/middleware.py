@@ -1,6 +1,6 @@
-"""Middleware configuration for Osiris.
+"""Конфигурация middleware для Osiris.
 
-Path: osiris/config/settings/middleware.py
+Путь: osiris/config/settings/middleware.py
 """
 
 from .environment import ENABLE_DEBUG_TOOLBAR

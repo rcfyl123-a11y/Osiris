@@ -1,1 +1,1 @@
-"""Admin panel application for Osiris."""
+"""Приложение административной панели Osiris."""

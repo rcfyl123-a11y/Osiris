@@ -1,10 +1,10 @@
 """
-ASGI config for Osiris project.
-Path: osiris/config/asgi.py
+ASGI-конфигурация проекта Osiris.
+Путь: osiris/config/asgi.py
 
-It exposes the ASGI callable as a module-level variable named ``application``.
+Экспортирует ASGI-приложение как переменную уровня модуля ``application``.
 
-For more information on this file, see
+Подробнее:
 https://docs.djangoproject.com/en/stable/howto/deployment/asgi/
 """
 

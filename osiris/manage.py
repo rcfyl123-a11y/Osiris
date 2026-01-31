@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
+"""Командная утилита Django для административных задач."""
 import os
 import sys
 
 
 def main():
-    """Run administrative tasks."""
-    # Add the current and parent directories to the Python path so apps can be found
+    """Запустить административные задачи."""
+    # Добавляем текущую и родительскую директории в Python path, чтобы находить приложения.
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     sys.path.insert(0, current_dir)

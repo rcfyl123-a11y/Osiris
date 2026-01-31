@@ -1,4 +1,4 @@
-"""Initial migration for chat app."""
+"""Начальная миграция приложения чатов."""
 
 from django.conf import settings
 from django.db import migrations, models

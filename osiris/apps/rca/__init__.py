@@ -1,1 +1,1 @@
-"""RCA app for staffing history and XML imports."""
+"""RCA-приложение для истории штатного расписания и XML-импорта."""

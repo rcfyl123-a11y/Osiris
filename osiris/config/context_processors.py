@@ -1,11 +1,11 @@
-"""Context processors for Osiris Django project.
+"""Контекстные процессоры для Django-проекта Osiris.
 
-Path: osiris/config/context_processors.py
+Путь: osiris/config/context_processors.py
 """
 
 from django.contrib import messages
 
 
 def toast_messages(request):
-    """Return lazily evaluated Django messages for template toast rendering."""
+    """Вернуть ленивые Django-сообщения для toast-уведомлений в шаблонах."""
     return {"toast_messages": messages.get_messages(request)}
