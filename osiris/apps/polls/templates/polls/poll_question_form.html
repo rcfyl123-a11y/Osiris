@@ -74,7 +74,7 @@
                 <div class="alert alert-warning">{{ formset.non_form_errors }}</div>
             {% endif %}
             {{ formset.management_form }}
-            <div class="d-grid gap-3">
+            <div class="d-grid gap-3" id="poll-choice-forms" data-formset-prefix="{{ formset.prefix }}">
                 {% for choice_form in formset %}
                     <div class="border rounded p-3">
                         <div class="row g-3 align-items-end">
@@ -104,6 +104,24 @@
                     </div>
                 {% endfor %}
             </div>
+            <button class="btn btn-outline-primary btn-sm mt-3" type="button" id="add-choice-button">
+                Добавить вариант
+            </button>
+            <template id="choice-empty-form-template">
+                <div class="border rounded p-3">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-7">
+                            {{ formset.empty_form.text.label_tag }}
+                            {{ formset.empty_form.text }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ formset.empty_form.order.label_tag }}
+                            {{ formset.empty_form.order }}
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
     <div class="card-footer bg-transparent d-flex justify-content-between">
@@ -111,4 +129,33 @@
         <button class="btn btn-primary" type="submit">Сохранить</button>
     </div>
 </form>
+
+<script>
+    (function () {
+        const formsetContainer = document.getElementById("poll-choice-forms");
+        const addButton = document.getElementById("add-choice-button");
+        const template = document.getElementById("choice-empty-form-template");
+        if (!formsetContainer || !addButton || !template) {
+            return;
+        }
+
+        const prefix = formsetContainer.dataset.formsetPrefix;
+        const totalFormsInput = document.querySelector(`input[name="${prefix}-TOTAL_FORMS"]`);
+
+        addButton.addEventListener("click", () => {
+            if (!totalFormsInput) {
+                return;
+            }
+            const formCount = parseInt(totalFormsInput.value, 10);
+            const formHtml = template.innerHTML.replace(/__prefix__/g, formCount);
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = formHtml.trim();
+            const newForm = wrapper.firstElementChild;
+            if (newForm) {
+                formsetContainer.appendChild(newForm);
+                totalFormsInput.value = formCount + 1;
+            }
+        });
+    })();
+</script>
 {% endblock %}
