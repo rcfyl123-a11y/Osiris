@@ -42,9 +42,13 @@ POLL_RESULT_COLORS = [
 
 def poll_list(request: HttpRequest) -> HttpResponse:
     if request.user.is_staff:
-        polls = Poll.objects.all().order_by("-start_at", "-created_at")
+        polls = Poll.objects.annotate(vote_count=Count("votes")).order_by(
+            "-start_at", "-created_at"
+        )
     else:
-        polls = Poll.objects.exclude(status=Poll.Status.DRAFT).order_by("-start_at", "-created_at")
+        polls = Poll.objects.exclude(status=Poll.Status.DRAFT).annotate(
+            vote_count=Count("votes")
+        ).order_by("-start_at", "-created_at")
     return render(request, "polls/poll_list.html", {"polls": polls, "now": timezone.now()})
 
 
