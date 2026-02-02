@@ -57,6 +57,9 @@
                         {% endif %}
                         {% if user.is_staff %}
                             <a href="{% url 'polls:poll_builder' poll.id %}" class="btn btn-outline-secondary btn-sm">Конструктор</a>
+                            {% if poll.vote_count %}
+                                <a href="{% url 'polls:poll_results' poll.id %}" class="btn btn-outline-primary btn-sm">Результаты</a>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
