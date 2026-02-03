@@ -117,7 +117,7 @@ class Poll(models.Model):
 
     def audience_queryset(self) -> models.QuerySet[Workplace]:
         if self.audience_all:
-            return Workplace.objects.filter(is_active=True)
+            return Workplace.objects.none()
         return self.audience_workplaces.filter(is_active=True)
 
 

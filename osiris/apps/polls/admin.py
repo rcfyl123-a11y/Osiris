@@ -102,8 +102,10 @@ class PollAdmin(admin.ModelAdmin):
 
     @admin.display(description="Явка")
     def turnout_summary(self, obj: Poll) -> str:
-        eligible = obj.audience_queryset().count()
         voted = obj.votes.values("voter_ip").distinct().count()
+        if obj.audience_all:
+            return f"{voted}/все"
+        eligible = obj.audience_queryset().count()
         return f"{voted}/{eligible}"
 
     @admin.action(description="Опубликовать выбранные голосования")
