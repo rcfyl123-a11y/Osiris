@@ -133,18 +133,18 @@ def poll_detail(request: HttpRequest, slug_or_id: str) -> HttpResponse:
         return HttpResponseForbidden("Не удалось определить IP-адрес.")
 
     workplace = Workplace.objects.filter(ip_address=client_ip, is_active=True).first()
-    eligible_workplaces = poll.audience_queryset()
-
-    if not eligible_workplaces.filter(ip_address=client_ip).exists():
-        return render(
-            request,
-            "polls/poll_unavailable.html",
-            {
-                "poll": poll,
-                "status_message": "Ваше рабочее место не входит в аудиторию голосования.",
-            },
-            status=403,
-        )
+    if not poll.audience_all:
+        eligible_workplaces = poll.audience_queryset()
+        if not eligible_workplaces.filter(ip_address=client_ip).exists():
+            return render(
+                request,
+                "polls/poll_unavailable.html",
+                {
+                    "poll": poll,
+                    "status_message": "Ваше рабочее место не входит в аудиторию голосования.",
+                },
+                status=403,
+            )
 
     if poll.status in {Poll.Status.DRAFT, Poll.Status.CLOSED, Poll.Status.ARCHIVED}:
         return render(
@@ -589,8 +589,19 @@ def poll_turnout_csv(request: HttpRequest, poll_id: int) -> HttpResponse:
 
 
 def _build_turnout(poll: Poll) -> dict:
-    eligible_workplaces = poll.audience_queryset()
     voted_ips = Vote.objects.filter(poll=poll).values_list("voter_ip", flat=True)
+    if poll.audience_all:
+        voted_count = Vote.objects.filter(poll=poll).values("voter_ip").distinct().count()
+        voted_workplaces = Workplace.objects.filter(ip_address__in=voted_ips, is_active=True)
+        return {
+            "eligible_count": voted_count,
+            "voted_count": voted_count,
+            "not_voted_count": 0,
+            "voted_workplaces": voted_workplaces,
+            "not_voted_workplaces": Workplace.objects.none(),
+        }
+
+    eligible_workplaces = poll.audience_queryset()
     voted_workplaces = eligible_workplaces.filter(ip_address__in=voted_ips)
     not_voted_workplaces = eligible_workplaces.exclude(ip_address__in=voted_ips)
 
